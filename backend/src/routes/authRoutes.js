@@ -1,0 +1,29 @@
+const express = require('express');
+const { body } = require('express-validator');
+const authController = require('../controllers/authController');
+const auth = require('../middleware/auth');
+
+const router = express.Router();
+
+// Validation middleware
+const signupValidation = [
+  body('firstName').trim().notEmpty().withMessage('Le prénom est obligatoire'),
+  body('lastName').trim().notEmpty().withMessage('Le nom est obligatoire'),
+  body('email').isEmail().withMessage('Email invalide'),
+  body('password').isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères'),
+];
+
+const loginValidation = [
+  body('email').isEmail().withMessage('Email invalide'),
+  body('password').notEmpty().withMessage('Le mot de passe est obligatoire'),
+];
+
+// Routes publiques
+router.post('/signup', signupValidation, authController.signup);
+router.post('/login', loginValidation, authController.login);
+
+// Routes protégées
+router.get('/me', auth, authController.getMe);
+router.put('/profile', auth, authController.updateProfile);
+
+module.exports = router;

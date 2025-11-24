@@ -1,0 +1,492 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --color-red: #a01e1e;
+    --color-gold: #d4af37;
+    --color-dark-blue: #001a4d;
+    --color-white: #ffffff;
+    --color-text: #333333;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    color: var(--color-text);
+    background-color: var(--color-white);
+    overflow-x: hidden;
+}
+
+.container-main {
+    width: 100%;
+    min-height: 100vh;
+    background-color: var(--color-red);
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== HEADER ===== */
+.header {
+    background-color: var(--color-gold);
+    padding: 15px 20px;
+    margin: 15px;
+    border-radius: 15px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.logo {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+}
+
+.logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Menu toggle (hamburger) */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    background: none;
+    border: none;
+    cursor: pointer;
+    gap: 5px;
+}
+
+.menu-toggle span {
+    width: 25px;
+    height: 3px;
+    background-color: var(--color-dark-blue);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(10px, 10px);
+}
+
+.menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
+.navigation ul {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.navigation a {
+    text-decoration: none;
+    color: var(--color-dark-blue);
+    font-weight: bold;
+    font-size: 14px;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+}
+
+.navigation a:hover {
+    color: var(--color-red);
+    text-decoration: underline;
+}
+
+/* ===== HERO SECTION ===== */
+.hero-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: 400px;
+}
+
+.carousel {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    aspect-ratio: 16 / 10;
+}
+
+.carousel-item {
+    display: none;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-item.active {
+    display: block;
+}
+
+.carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.carousel-text {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.3));
+    color: var(--color-white);
+    padding: 30px;
+    text-align: center;
+}
+
+.carousel-text h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    line-height: 1.4;
+    font-weight: bold;
+}
+
+.carousel-text p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.btn-subscribe {
+    background-color: var(--color-dark-blue);
+    color: var(--color-white);
+    border: none;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-subscribe:hover {
+    background-color: var(--color-red);
+    transform: scale(1.05);
+}
+
+.btn-subscribe:active {
+    transform: scale(0.95);
+}
+
+/* Carousel Indicators */
+.carousel-indicators {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.indicator:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.indicator.active {
+    background-color: var(--color-white);
+    width: 30px;
+    border-radius: 6px;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    flex: 1;
+    padding: 40px 20px;
+    background-color: var(--color-white);
+}
+
+/* ===== FOOTER ===== */
+.footer {
+    background-color: var(--color-dark-blue);
+    color: var(--color-gold);
+    text-align: center;
+    padding: 30px 20px;
+    margin-top: auto;
+}
+
+.footer p {
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.social-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+    transform: scale(1.2) translateY(-5px);
+}
+
+.social-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablets (768px et moins) */
+@media (max-width: 768px) {
+    .header {
+        padding: 12px 15px;
+        margin: 10px;
+    }
+
+    .header-content {
+        flex-wrap: wrap;
+    }
+
+    .logo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+    .navigation {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--color-gold);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        width: 100%;
+    }
+
+    .navigation.active {
+        max-height: 300px;
+    }
+
+    .navigation ul {
+        flex-direction: column;
+        gap: 10px;
+        padding: 20px;
+    }
+
+    .navigation a {
+        display: block;
+        font-size: 14px;
+    }
+
+    .carousel {
+        aspect-ratio: 4 / 5;
+        min-height: 300px;
+    }
+
+    .carousel-text {
+        padding: 20px;
+    }
+
+    .carousel-text h2 {
+        font-size: 18px;
+    }
+
+    .carousel-text p {
+        font-size: 14px;
+    }
+
+    .btn-subscribe {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .hero-section {
+        padding: 15px;
+        min-height: 350px;
+    }
+
+    .main-content {
+        padding: 25px 15px;
+    }
+
+    .footer {
+        padding: 20px 15px;
+    }
+
+    .social-links {
+        gap: 15px;
+    }
+
+    .social-icon {
+        width: 35px;
+        height: 35px;
+    }
+}
+
+/* Petits téléphones (480px et moins) */
+@media (max-width: 480px) {
+    .header {
+        padding: 10px 12px;
+        margin: 8px;
+        border-radius: 10px;
+    }
+
+    .logo {
+        width: 50px;
+        height: 50px;
+    }
+
+    .menu-toggle span {
+        width: 22px;
+        height: 2.5px;
+    }
+
+    .navigation.active {
+        max-height: 250px;
+    }
+
+    .navigation ul {
+        padding: 15px;
+        gap: 8px;
+    }
+
+    .navigation a {
+        font-size: 12px;
+    }
+
+    .hero-section {
+        padding: 10px;
+        min-height: 280px;
+    }
+
+    .carousel {
+        aspect-ratio: 1 / 1.2;
+        min-height: 250px;
+        border-radius: 10px;
+    }
+
+    .carousel-text {
+        padding: 15px;
+    }
+
+    .carousel-text h2 {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .carousel-text p {
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+
+    .btn-subscribe {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+
+    .carousel-indicators {
+        bottom: 15px;
+        gap: 8px;
+    }
+
+    .indicator {
+        width: 8px;
+        height: 8px;
+    }
+
+    .indicator.active {
+        width: 20px;
+    }
+
+    .main-content {
+        padding: 20px 12px;
+    }
+
+    .footer {
+        padding: 15px 10px;
+    }
+
+    .footer p {
+        font-size: 12px;
+    }
+
+    .social-links {
+        gap: 12px;
+    }
+
+    .social-icon {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+/* Très petits écrans (moins de 360px) */
+@media (max-width: 360px) {
+    .header {
+        margin: 5px;
+        padding: 8px 10px;
+    }
+
+    .logo {
+        width: 45px;
+        height: 45px;
+    }
+
+    .navigation a {
+        font-size: 11px;
+    }
+
+    .carousel-text h2 {
+        font-size: 12px;
+    }
+
+    .carousel-text p {
+        font-size: 10px;
+    }
+
+    .btn-subscribe {
+        padding: 7px 12px;
+        font-size: 11px;
+    }
+}

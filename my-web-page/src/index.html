@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GJ Camp - Génération Josué</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <div class="container-main">
+        <!-- Header avec logo et navigation -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="assets/images/logo.jpeg" alt="Logo GJ">
+                </div>
+                <button class="menu-toggle" id="menuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <nav class="navigation" id="navigation">
+                    <ul>
+                        <li><a href="#connexion">CONNEXION</a></li>
+                        <li><a href="#accueil">ACCUEIL</a></li>
+                        <li><a href="#agenda">MON GJ AGENDA</a></li>
+                        <li><a href="#activites">NOS ACTIVITES</a></li>
+                        <li><a href="#apropos">À PROPOS</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Section Carousel/Hero -->
+        <section class="hero-section">
+            <div class="carousel">
+                <div class="carousel-item active">
+                    <img src="assets/images/photoTest.jpg" alt="Camp GJ moment 1">
+                    <div class="carousel-text">
+                        <h2>Le camp GJ, des moments inoubliables, de nouvelles rencontres, des instants de partages, ne le rate pas.</h2>
+                        <p>C'est du 08/08/2026 au 11/08/2026.</p>
+                        <button class="btn-subscribe">S'inscrire</button>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="assets/images/photoTest2.jpg" alt="Camp GJ moment 2">
+                    <div class="carousel-text">
+                        <h2>Rejoignez-nous pour une expérience unique!</h2>
+                        <p>Dates: 08/08/2026 - 11/08/2026</p>
+                        <button class="btn-subscribe">S'inscrire</button>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="assets/images/photoTest3.jpg" alt="Camp GJ moment 3">
+                    <div class="carousel-text">
+                        <h2>Des souvenirs qui dureront toute une vie</h2>
+                        <p>Dates: 08/08/2026 - 11/08/2026</p>
+                        <button class="btn-subscribe">S'inscrire</button>
+                    </div>
+                </div>
+
+                <!-- Carousel indicators -->
+                <div class="carousel-indicators">
+                    <span class="indicator active" onclick="currentSlide(0)"></span>
+                    <span class="indicator" onclick="currentSlide(1)"></span>
+                    <span class="indicator" onclick="currentSlide(2)"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main content -->
+       
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Tous droits réservés. Génération Josué</p>
+            <div class="social-links">
+                <a href="#youtube" class="social-icon">
+                    <img src="assets/images/youtube-icon.png" alt="YouTube">
+                </a>
+                <a href="#instagram" class="social-icon">
+                    <img src="assets/images/instagram-icon.png" alt="Instagram">
+                </a>
+                <a href="#facebook" class="social-icon">
+                    <img src="assets/images/facebook-icon.png" alt="Facebook">
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="scripts/script.js"></script>
+</body>
+</html>
