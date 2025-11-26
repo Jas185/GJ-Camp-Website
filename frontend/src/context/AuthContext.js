@@ -43,7 +43,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', newToken);
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.response?.data?.message };
+      // Gérer les erreurs de validation
+      if (error.response?.data?.errors) {
+        const errorMessages = error.response.data.errors.map(err => err.msg).join(', ');
+        return { success: false, error: errorMessages };
+      }
+      return { success: false, error: error.response?.data?.message || 'Une erreur est survenue' };
     } finally {
       setLoading(false);
     }
@@ -59,7 +64,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', newToken);
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.response?.data?.message };
+      // Gérer les erreurs de validation
+      if (error.response?.data?.errors) {
+        const errorMessages = error.response.data.errors.map(err => err.msg).join(', ');
+        return { success: false, error: errorMessages };
+      }
+      return { success: false, error: error.response?.data?.message || 'Une erreur est survenue' };
     } finally {
       setLoading(false);
     }
@@ -88,6 +98,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const checkEmailAvailability = async (email) => {
+    try {
+      const response = await axios.post('/api/auth/check-email', { email });
+      return response.data;
+    } catch (error) {
+      return { available: false, message: 'Erreur lors de la vérification' };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -98,6 +117,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         updateProfile,
+        checkEmailAvailability,
         isAuthenticated: !!user,
       }}
     >

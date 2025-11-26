@@ -21,6 +21,9 @@ const loginValidation = [
 // Routes publiques
 router.post('/signup', signupValidation, authController.signup);
 router.post('/login', loginValidation, authController.login);
+router.post('/check-email', authController.checkEmail);
+router.get('/verify-email/:token', authController.verifyEmail);
+router.post('/resend-verification', authController.resendVerification);
 
 // Routes protégées
 router.get('/me', auth, authController.getMe);

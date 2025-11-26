@@ -12,7 +12,10 @@ const SignupPage = () => {
     churchWebsite: '',
   });
   const [error, setError] = useState('');
-  const { signup, loading } = useContext(AuthContext);
+  const [success, setSuccess] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [emailChecking, setEmailChecking] = useState(false);
+  const { signup, loading, checkEmailAvailability } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,8 +26,38 @@ const SignupPage = () => {
     }));
   };
 
+  const handleEmailBlur = async () => {
+    if (formData.email && formData.email.includes('@')) {
+      setEmailChecking(true);
+      setEmailError('');
+      const result = await checkEmailAvailability(formData.email);
+      setEmailChecking(false);
+      
+      if (!result.available) {
+        setEmailError('❌ Cet email est déjà utilisé');
+      } else {
+        setEmailError('✅ Email disponible');
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+    
+    // Validation côté client
+    if (formData.password.length < 6) {
+      setError('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    // Vérifier l'unicité de l'email avant l'inscription
+    if (emailError && emailError.includes('❌')) {
+      setError('Cet email est déjà utilisé. Veuillez en choisir un autre.');
+      return;
+    }
+    
     const result = await signup(
       formData.firstName,
       formData.lastName,
@@ -33,7 +66,9 @@ const SignupPage = () => {
       formData.churchWebsite
     );
     if (result.success) {
-      navigate('/');
+      setSuccess('✅ Inscription réussie ! Un email de vérification a été envoyé à ' + formData.email + '. Veuillez vérifier votre boîte de réception.');
+      // Ne pas rediriger automatiquement
+      // L'utilisateur doit d'abord vérifier son email
     } else {
       setError(result.error);
     }
@@ -45,6 +80,7 @@ const SignupPage = () => {
         <div className="form-container">
           <h2>S'INSCRIRE</h2>
           {error && <div className="form-error">{error}</div>}
+          {success && <div className="form-success">{success}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Prénom</label>
@@ -73,16 +109,24 @@ const SignupPage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={handleEmailBlur}
                 required
               />
+              {emailChecking && <small style={{color: '#666'}}>🔍 Vérification en cours...</small>}
+              {emailError && (
+                <small style={{color: emailError.includes('✅') ? '#27ae60' : '#e74c3c', fontWeight: 'bold'}}>
+                  {emailError}
+                </small>
+              )}
             </div>
             <div className="form-group">
-              <label>Mot de passe</label>
+              <label>Mot de passe (minimum 6 caractères)</label>
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
+                minLength={6}
                 required
               />
             </div>
@@ -101,6 +145,9 @@ const SignupPage = () => {
           </form>
           <p style={{ marginTop: '20px', textAlign: 'center' }}>
             Déjà inscrit? <Link to="/login">Se connecter ici</Link>
+          </p>
+          <p style={{ marginTop: '10px', textAlign: 'center', fontSize: '14px' }}>
+            Email de vérification non reçu? <Link to="/resend-verification">Renvoyer l'email</Link>
           </p>
         </div>
       </div>
