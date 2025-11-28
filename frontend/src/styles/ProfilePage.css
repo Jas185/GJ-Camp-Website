@@ -1,0 +1,229 @@
+.profile-page-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+
+.profile-card {
+  background: rgba(9, 18, 36, 0.75);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 40px 80px rgba(0, 10, 28, 0.45);
+  backdrop-filter: blur(14px);
+  color: #ffffff;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.profile-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.profile-header h1 {
+  font-size: 2rem;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.profile-header p {
+  margin: 0.5rem 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 1rem;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0b1226;
+}
+
+.role-utilisateur {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.role-referent {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+  color: #ffffff;
+}
+
+.role-responsable {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.95), rgba(239, 91, 135, 0.9));
+}
+
+.role-admin {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.95), rgba(52, 152, 219, 0.95));
+  color: #ffffff;
+}
+
+.profile-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.verification-alert {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 18px;
+  margin-bottom: 2rem;
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.35);
+}
+
+.verification-alert h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #f7a596;
+}
+
+.verification-alert p {
+  margin: 0.5rem 0 0;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.meta-label {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.meta-value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.profile-alert {
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profile-alert-success {
+  background: rgba(46, 204, 113, 0.16);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.35);
+}
+
+.profile-alert-error {
+  background: rgba(231, 76, 60, 0.16);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.35);
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.form-field span {
+  font-weight: 600;
+}
+
+.form-field input,
+.form-field textarea {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(10, 20, 40, 0.75);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-family: 'Poppins', sans-serif;
+  transition: border 0.2s ease, background 0.2s ease;
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.75);
+  background: rgba(6, 14, 28, 0.85);
+}
+
+.form-field input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.social-section h2 {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .profile-card {
+    padding: 1.75rem;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-actions {
+    justify-content: stretch;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
+  .verification-alert {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .verification-alert .btn-secondary {
+    width: 100%;
+  }
+}

@@ -1,0 +1,71 @@
+.access-denied-container {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
+}
+
+.access-card {
+  background: rgba(8, 16, 32, 0.82);
+  border-radius: 26px;
+  padding: 3rem;
+  max-width: 520px;
+  text-align: center;
+  color: #ffffff;
+  box-shadow: 0 45px 80px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  backdrop-filter: blur(14px);
+}
+
+.access-icon {
+  font-size: 3rem;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.access-card h1 {
+  margin-bottom: 1rem;
+  font-size: 2rem;
+}
+
+.access-card p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.access-roles {
+  display: block;
+  margin-top: 0.75rem;
+  font-weight: 600;
+  color: #f1d27a;
+}
+
+.access-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.access-actions .btn-primary,
+.access-actions .btn-secondary {
+  min-width: 180px;
+}
+
+@media (max-width: 600px) {
+  .access-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .access-actions {
+    flex-direction: column;
+  }
+
+  .access-actions .btn-primary,
+  .access-actions .btn-secondary {
+    width: 100%;
+  }
+}

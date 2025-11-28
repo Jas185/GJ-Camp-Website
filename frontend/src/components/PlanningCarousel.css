@@ -1,0 +1,113 @@
+.planning-carousel {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #764ba233;
+  padding: 2rem 1.5rem 2.5rem 1.5rem;
+  text-align: center;
+}
+.planning-creneau-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #764ba2;
+  margin-bottom: 1.2rem;
+}
+.planning-activities-group {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.planning-activities-group.single {
+  flex-direction: column;
+  align-items: center;
+}
+.planning-activity-card {
+  background: #f9f7fd;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #764ba222;
+  padding: 1.2rem 1rem 1.2rem 1rem;
+  min-width: 220px;
+  max-width: 260px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.planning-activity-card.selected {
+  border: 2px solid #d4af37;
+  box-shadow: 0 4px 16px #d4af3733;
+}
+.planning-activity-image {
+  width: 100%;
+  height: 120px;
+  margin-bottom: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.planning-activity-image img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 10px;
+}
+.planning-activity-content h3 {
+  font-size: 1.1rem;
+  color: #764ba2;
+  margin-bottom: 0.3rem;
+}
+.planning-activity-content p {
+  font-size: 0.98rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+.planning-pdf-link {
+  color: #a01e1e;
+  font-size: 0.95rem;
+  text-decoration: underline;
+}
+.planning-radio-custom {
+  margin-top: 0.7rem;
+}
+.planning-radio-custom input[type="radio"] {
+  accent-color: #d4af37;
+  width: 1.2em;
+  height: 1.2em;
+}
+.planning-badge-obligatoire {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ffd700;
+  color: #001a4d;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 12px;
+}
+.planning-btn-valider {
+  margin-top: 1.2rem;
+  background: #764ba2;
+  color: #fff;
+  border: none;
+  border-radius: 22px;
+  padding: 0.7rem 2.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.planning-btn-valider:disabled {
+  background: #ccc;
+  color: #fff;
+  cursor: not-allowed;
+}
+.planning-finished {
+  text-align: center;
+  font-size: 1.3rem;
+  color: #2ecc71;
+  margin-top: 2.5rem;
+  font-weight: 700;
+}

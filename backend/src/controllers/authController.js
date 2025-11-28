@@ -5,8 +5,8 @@ const crypto = require('crypto');
 const { sendVerificationEmail } = require('../config/email');
 
 // Générer JWT
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+const generateToken = (user) => {
+  return jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: '7d',
   });
 };
@@ -53,12 +53,13 @@ exports.signup = async (req, res) => {
       // On continue quand même l'inscription
     }
 
-    const token = generateToken(user._id);
+    const sanitizedUser = await User.findById(user._id);
+    const token = generateToken(sanitizedUser);
 
     res.status(201).json({
       message: 'Inscription réussie ! Veuillez vérifier votre email pour activer votre compte.',
       token,
-      user: user.toJSON(),
+      user: sanitizedUser.toJSON(),
       emailSent: true,
     });
   } catch (error) {
@@ -129,12 +130,16 @@ exports.login = async (req, res) => {
       });
     }
 
-    const token = generateToken(user._id);
+    user.lastLoginAt = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    const freshUser = await User.findById(user._id);
+    const token = generateToken(freshUser);
 
     res.status(200).json({
       message: 'Connexion réussie',
       token,
-      user: user.toJSON(),
+      user: freshUser.toJSON(),
     });
   } catch (error) {
     console.error('Erreur lors de la connexion:', error);
@@ -148,7 +153,8 @@ exports.login = async (req, res) => {
 // @desc    Récupérer le profil de l'utilisateur connecté
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId)
+      .select('-password -emailVerificationToken -emailVerificationExpires');
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -159,11 +165,38 @@ exports.getMe = async (req, res) => {
 // @desc    Mettre à jour le profil de l'utilisateur
 exports.updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, churchWebsite } = req.body;
+    const {
+      firstName,
+      lastName,
+      churchWebsite,
+      phoneNumber,
+      bio,
+      ministryRole,
+      socialLinks,
+    } = req.body;
+
+    const allowedUpdates = {
+      ...(firstName !== undefined && { firstName }),
+      ...(lastName !== undefined && { lastName }),
+      ...(churchWebsite !== undefined && { churchWebsite }),
+      ...(phoneNumber !== undefined && { phoneNumber }),
+      ...(bio !== undefined && { bio }),
+      ...(ministryRole !== undefined && { ministryRole }),
+    };
+
+    if (socialLinks && typeof socialLinks === 'object') {
+      const cleanedLinks = Object.entries(socialLinks).reduce((acc, [key, value]) => {
+        if (typeof value === 'string' && value.trim() !== '') {
+          acc[key] = value.trim();
+        }
+        return acc;
+      }, {});
+      allowedUpdates.socialLinks = cleanedLinks;
+    }
 
     const user = await User.findByIdAndUpdate(
       req.user.userId,
-      { firstName, lastName, churchWebsite },
+      allowedUpdates,
       { new: true, runValidators: true }
     );
 
@@ -202,6 +235,7 @@ exports.verifyEmail = async (req, res) => {
 
     // Marquer l'email comme vérifié
     user.isEmailVerified = true;
+    user.emailVerifiedAt = new Date();
     user.emailVerificationToken = undefined;
     user.emailVerificationExpires = undefined;
     await user.save();
@@ -258,5 +292,51 @@ exports.resendVerification = async (req, res) => {
     res.status(500).json({
       message: 'Une erreur est survenue lors de l\'envoi de l\'email.',
     });
+  }
+};
+
+// @route   POST /api/auth/upload-photo
+// @desc    Upload photo de profil
+exports.uploadPhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Aucun fichier fourni' });
+    }
+
+    const userId = req.user.userId;
+    const photoUrl = `/uploads/${req.file.filename}`;
+
+    await User.findByIdAndUpdate(userId, { profilePhoto: photoUrl });
+
+    res.status(200).json({
+      message: 'Photo de profil mise à jour avec succès',
+      profilePhoto: photoUrl
+    });
+  } catch (error) {
+    console.error('Erreur lors de l\'upload de la photo:', error);
+    res.status(500).json({ message: 'Erreur lors de l\'upload de la photo' });
+  }
+};
+
+// @desc    Mettre à jour les activités sélectionnées
+exports.updateSelectedActivities = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { selectedActivities } = req.body;
+
+    if (!Array.isArray(selectedActivities)) {
+      return res.status(400).json({ message: 'selectedActivities doit être un tableau' });
+    }
+
+    await User.findByIdAndUpdate(userId, { selectedActivities });
+
+    console.log(`✅ Activités mises à jour pour l'utilisateur ${userId}`);
+    res.status(200).json({
+      message: 'Activités mises à jour avec succès',
+      selectedActivities
+    });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour des activités:', error);
+    res.status(500).json({ message: 'Erreur lors de la mise à jour des activités' });
   }
 };

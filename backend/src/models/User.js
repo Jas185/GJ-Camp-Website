@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const { ROLES } = require('../constants/roles');
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -31,10 +32,31 @@ const userSchema = new mongoose.Schema({
     trim: true,
     default: null,
   },
+  phoneNumber: {
+    type: String,
+    trim: true,
+    default: null,
+  },
+  ministryRole: {
+    type: String,
+    trim: true,
+    default: null,
+  },
+  bio: {
+    type: String,
+    trim: true,
+    maxlength: 600,
+    default: '',
+  },
+  socialLinks: {
+    type: Map,
+    of: String,
+    default: () => ({}),
+  },
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
+    enum: ROLES,
+    default: 'utilisateur',
   },
   isEmailVerified: {
     type: Boolean,
@@ -48,6 +70,22 @@ const userSchema = new mongoose.Schema({
     type: Date,
     select: false,
   },
+  profilePhoto: {
+    type: String,
+    default: null,
+  },
+  lastLoginAt: {
+    type: Date,
+    default: null,
+  },
+  emailVerifiedAt: {
+    type: Date,
+    default: null,
+  },
+  selectedActivities: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Activity'
+  }],
   createdAt: {
     type: Date,
     default: Date.now,
@@ -65,6 +103,14 @@ userSchema.pre('save', async function(next) {
   } catch (error) {
     next(error);
   }
+});
+
+// Harmoniser les anciens rôles lors de la validation
+userSchema.pre('validate', function(next) {
+  if (this.role === 'user') {
+    this.role = 'utilisateur';
+  }
+  next();
 });
 
 // Méthode pour comparer les mots de passe

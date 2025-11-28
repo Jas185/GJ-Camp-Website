@@ -15,11 +15,6 @@ const VerifyEmailPage = () => {
         const response = await axios.get(`/api/auth/verify-email/${token}`);
         setStatus('success');
         setMessage(response.data.message);
-        
-        // Rediriger vers la page de connexion après 3 secondes
-        setTimeout(() => {
-          navigate('/login');
-        }, 3000);
       } catch (error) {
         setStatus('error');
         setMessage(
@@ -33,6 +28,18 @@ const VerifyEmailPage = () => {
       verifyEmail();
     }
   }, [token, navigate]);
+
+  useEffect(() => {
+    if (status !== 'success') {
+      return undefined;
+    }
+
+    const timeoutId = setTimeout(() => {
+      navigate('/login', { replace: true });
+    }, 3000);
+
+    return () => clearTimeout(timeoutId);
+  }, [status, navigate]);
 
   const handleResend = async () => {
     // Logique de renvoi à implémenter si nécessaire

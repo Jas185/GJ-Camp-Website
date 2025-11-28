@@ -2,6 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const authController = require('../controllers/authController');
 const auth = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -28,5 +29,7 @@ router.post('/resend-verification', authController.resendVerification);
 // Routes protégées
 router.get('/me', auth, authController.getMe);
 router.put('/profile', auth, authController.updateProfile);
+router.post('/upload-photo', auth, upload.single('profilePhoto'), authController.uploadPhoto);
+router.patch('/update-selected-activities', auth, authController.updateSelectedActivities);
 
 module.exports = router;

@@ -44,20 +44,32 @@ const Carousel = () => {
   };
 
   return (
-    <div className="carousel">
+    <div className="carousel" style={{position: 'relative', minHeight: 680}}>
+      <div className="carousel-title-overlay carousel-title-left">
+        <h1 className="carousel-main-title">CAMP GJ</h1>
+        <p className="carousel-subtitle-text carousel-subtitle-no-bg">
+          Nous sommes une génération puissante et remplie du Saint-Esprit.<br />
+          Au camp, Dieu témoigne toujours de sa présence : nous ne sommes jamais déçus.
+        </p>
+      </div>
       {slides.map((slide, index) => (
         <div
           key={index}
-          className="carousel-item"
-          style={{
-            display: index === currentSlide ? 'block' : 'none',
-          }}
+          className={`carousel-item${index === currentSlide ? ' active' : ''}`}
         >
-          <img src={slide.image} alt={`Slide ${index + 1}`} />
-          <div className="carousel-text">
-            <h2>{slide.title}</h2>
-            <p>{slide.date}</p>
-            <button className="btn-primary">S'inscrire</button>
+          <div style={{position: 'relative', width: '100%', height: '100%', minHeight: 680}}>
+            <div
+              className="carousel-background"
+              style={{
+                backgroundImage: `url(${slide.image})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                width: '100%',
+                height: '100%',
+                minHeight: 680,
+              }}
+            />
+            <div className="carousel-overlay" />
           </div>
         </div>
       ))}
@@ -69,6 +81,11 @@ const Carousel = () => {
             onClick={() => goToSlide(index)}
           />
         ))}
+      </div>
+      <div className="carousel-inscription-btn">
+        <a href="/inscription">
+          <button className="btn-primary btn-large">S'inscrire au camp</button>
+        </a>
       </div>
     </div>
   );
