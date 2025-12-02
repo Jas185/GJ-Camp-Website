@@ -37,4 +37,36 @@ router.patch(
 	userController.adminConfirmEmail
 );
 
+router.patch(
+	'/:id/permissions',
+	auth,
+	requireVerifiedEmail,
+	authorize(...ADMIN_ROLES),
+	userController.updateUserPermissions
+);
+
+router.patch(
+	'/:id/deactivate',
+	auth,
+	requireVerifiedEmail,
+	authorize(...ADMIN_ROLES),
+	userController.deactivateUser
+);
+
+router.patch(
+	'/:id/activate',
+	auth,
+	requireVerifiedEmail,
+	authorize(...ADMIN_ROLES),
+	userController.activateUser
+);
+
+router.delete(
+	'/:id',
+	auth,
+	requireVerifiedEmail,
+	authorize(...ADMIN_ROLES),
+	userController.deleteUser
+);
+
 module.exports = router;

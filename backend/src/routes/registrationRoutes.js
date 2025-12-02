@@ -8,6 +8,11 @@ const requireVerifiedEmail = require('../middleware/requireVerifiedEmail');
 // Routes protégées (utilisateur connecté)
 router.post('/', auth, requireVerifiedEmail, registrationController.createRegistration);
 router.get('/mes-inscriptions', auth, registrationController.getUserRegistrations);
+router.put('/:id/additional-payment', auth, registrationController.addAdditionalPayment);
+
+// Routes pour les invités
+router.post('/guest', auth, requireVerifiedEmail, registrationController.createGuestRegistration);
+router.get('/mes-invites', auth, registrationController.getUserGuests);
 
 // Routes admin pour le suivi des inscriptions
 router.get(

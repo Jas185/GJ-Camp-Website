@@ -78,6 +78,24 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  isActive: {
+    type: Boolean,
+    default: true,
+    comment: 'Compte actif ou désactivé par un admin'
+  },
+  deactivatedAt: {
+    type: Date,
+    default: null
+  },
+  deactivatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  deactivationReason: {
+    type: String,
+    default: null
+  },
   emailVerifiedAt: {
     type: Date,
     default: null,
@@ -90,6 +108,28 @@ const userSchema = new mongoose.Schema({
   selectedCreneaux: {
     type: Object,
     default: {},
+  },
+  // Préférences de notifications
+  emailNotifications: {
+    type: Boolean,
+    default: true,
+  },
+  smsNotifications: {
+    type: Boolean,
+    default: false,
+  },
+  pushNotifications: {
+    type: Boolean,
+    default: false,
+  },
+  pushPlayerId: {
+    type: String,
+    default: null,
+  },
+  // Permissions
+  canCreatePost: {
+    type: Boolean,
+    default: true, // Par défaut, tous peuvent créer des posts
   },
   createdAt: {
     type: Date,

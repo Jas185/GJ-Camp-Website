@@ -39,6 +39,11 @@ const activitySchema = new mongoose.Schema({
     type: String, // URL du PDF
     default: null
   },
+  referent: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
   dateCreation: {
     type: Date,
     default: Date.now

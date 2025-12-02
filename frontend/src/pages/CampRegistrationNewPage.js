@@ -1,9 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import ModernLogo from '../components/ModernLogo';
 import { UserIcon, MailIcon, HomeIcon, CreditCardIcon } from '../components/Icons';
+import PayPalButton from '../components/PayPalButton';
 import '../styles/RegistrationNew.css';
 
 const CampRegistrationNewPage = () => {
@@ -27,6 +28,48 @@ const CampRegistrationNewPage = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+  const [showPayPal, setShowPayPal] = useState(false);
+  const [formValidated, setFormValidated] = useState(false);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
+  const [checkingRegistration, setCheckingRegistration] = useState(true);
+
+  // Vérifier si l'utilisateur est déjà inscrit
+  useEffect(() => {
+    const checkExistingRegistration = async () => {
+      if (!token) {
+        setCheckingRegistration(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get('/api/registration/mes-inscriptions', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.data.registrations && response.data.registrations.length > 0) {
+          setAlreadyRegistered(true);
+        }
+      } catch (err) {
+        console.error('Erreur lors de la vérification de l\'inscription:', err);
+      } finally {
+        setCheckingRegistration(false);
+      }
+    };
+
+    checkExistingRegistration();
+  }, [token]);
+
+  // Mettre à jour le formulaire quand les données utilisateur changent
+  useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        firstName: user.firstName || prev.firstName,
+        lastName: user.lastName || prev.lastName,
+        email: user.email || prev.email
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -50,21 +93,66 @@ const CampRegistrationNewPage = () => {
         return;
       }
 
-      const response = await axios.post('/api/registration', form, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Valider le montant
+      if (form.amountPaid < 20 || form.amountPaid > 120) {
+        setError('Le montant doit être entre 20€ et 120€');
+        setLoading(false);
+        return;
+      }
 
-      setMessage(response.data.message || 'Inscription réussie ! Redirection...');
-      
-      setTimeout(() => {
-        navigate('/suivi-inscriptions');
-      }, 2000);
+      // Afficher le bouton PayPal
+      setFormValidated(true);
+      setShowPayPal(true);
+      setMessage('✅ Formulaire validé ! Procédez au paiement via PayPal ci-dessous.');
       
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors de l\'inscription');
+      setError(err.response?.data?.message || 'Erreur lors de la validation du formulaire');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePaymentSuccess = async (details) => {
+    setLoading(true);
+    try {
+      // Enregistrer l'inscription avec les détails du paiement
+      const registrationData = {
+        ...form,
+        paymentDetails: {
+          orderId: details.id,
+          payerId: details.payer.payer_id,
+          payerEmail: details.payer.email_address,
+          status: details.status,
+          amountPaid: form.amountPaid
+        }
+      };
+
+      const response = await axios.post('/api/registration', registrationData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setMessage('🎉 Paiement réussi ! Inscription enregistrée. Redirection...');
+      setShowPayPal(false);
+      
+      setTimeout(() => {
+        navigate('/tableau-de-bord');
+      }, 2000);
+      
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de l\'enregistrement de l\'inscription');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePaymentError = (err) => {
+    setError('❌ Erreur lors du paiement. Veuillez réessayer.');
+    console.error('Erreur PayPal:', err);
+  };
+
+  const handlePaymentCancel = () => {
+    setMessage('⚠️ Paiement annulé. Vous pouvez réessayer quand vous le souhaitez.');
+    setShowPayPal(false);
   };
 
   if (!user) {
@@ -79,6 +167,49 @@ const CampRegistrationNewPage = () => {
           <button className="new-btn-login" onClick={() => navigate('/login')}>
             Se connecter
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Affichage pendant la vérification
+  if (checkingRegistration) {
+    return (
+      <div className="new-registration-container">
+        <div className="new-registration-box">
+          <div className="new-header">
+            <ModernLogo variant={7} size="large" />
+            <h1>Inscription Camp GJ</h1>
+          </div>
+          <p className="new-message">⏳ Vérification de votre inscription...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Bloquer l'accès si déjà inscrit
+  if (alreadyRegistered) {
+    return (
+      <div className="new-registration-container">
+        <div className="new-registration-box">
+          <div className="new-header">
+            <ModernLogo variant={7} size="large" />
+            <h1>Inscription Camp GJ</h1>
+          </div>
+          <div className="already-registered-message">
+            <div className="icon-check">✅</div>
+            <h2>Vous êtes déjà inscrit !</h2>
+            <p>Vous avez déjà une inscription active pour le Camp GJ 2025.</p>
+            <p>Vous pouvez cependant inscrire un invité si vous le souhaitez.</p>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
+              <button className="new-btn-primary" onClick={() => navigate('/tableau-de-bord')}>
+                Voir mon tableau de bord
+              </button>
+              <button className="new-btn-secondary" onClick={() => navigate('/inscription-invite')}>
+                👥 Inscrire un invité
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -116,6 +247,8 @@ const CampRegistrationNewPage = () => {
                   onChange={handleChange}
                   required
                   placeholder="Votre nom"
+                  disabled
+                  style={{ background: '#f5f5f5', cursor: 'not-allowed' }}
                 />
               </div>
               
@@ -128,6 +261,8 @@ const CampRegistrationNewPage = () => {
                   onChange={handleChange}
                   required
                   placeholder="Votre prénom"
+                  disabled
+                  style={{ background: '#f5f5f5', cursor: 'not-allowed' }}
                 />
               </div>
             </div>
@@ -215,6 +350,8 @@ const CampRegistrationNewPage = () => {
                   onChange={handleChange}
                   required
                   placeholder="votre@email.com"
+                  disabled
+                  style={{ background: '#f5f5f5', cursor: 'not-allowed' }}
                 />
               </div>
             </div>
@@ -329,9 +466,22 @@ const CampRegistrationNewPage = () => {
             </div>
           </div>
 
-          <button type="submit" className="new-btn-submit" disabled={loading}>
-            {loading ? '⏳ Inscription en cours...' : '✅ Valider mon inscription'}
+          <button type="submit" className="new-btn-submit" disabled={loading || showPayPal}>
+            {loading ? '⏳ Inscription en cours...' : showPayPal ? '✅ Formulaire validé' : '✅ Valider mon inscription'}
           </button>
+
+          {showPayPal && (
+            <div className="paypal-section">
+              <h3>💳 Paiement sécurisé via PayPal</h3>
+              <p className="paypal-info">Montant à régler : <strong>{form.amountPaid}€</strong></p>
+              <PayPalButton
+                amount={form.amountPaid}
+                onSuccess={handlePaymentSuccess}
+                onError={handlePaymentError}
+                onCancel={handlePaymentCancel}
+              />
+            </div>
+          )}
         </form>
       </div>
     </div>

@@ -227,3 +227,138 @@ exports.adminConfirmEmail = async (req, res) => {
     res.status(500).json({ message: 'Impossible de confirmer cet email pour le moment.' });
   }
 };
+
+exports.updateUserPermissions = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const { canCreatePost } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+      return res.status(400).json({ message: 'Identifiant utilisateur invalide' });
+    }
+
+    if (typeof canCreatePost !== 'boolean') {
+      return res.status(400).json({ message: 'La valeur de canCreatePost doit être un booléen' });
+    }
+
+    const targetUser = await User.findById(targetUserId);
+
+    if (!targetUser) {
+      return res.status(404).json({ message: 'Utilisateur introuvable' });
+    }
+
+    targetUser.canCreatePost = canCreatePost;
+    await targetUser.save();
+
+    res.status(200).json({
+      message: `Permission de création de posts ${canCreatePost ? 'accordée' : 'révoquée'} avec succès.`,
+      user: sanitizeUser(targetUser),
+    });
+  } catch (error) {
+    console.error('❌ Erreur lors de la mise à jour des permissions:', error);
+    res.status(500).json({ message: 'Impossible de mettre à jour les permissions pour le moment.' });
+  }
+};
+
+// Désactiver un compte utilisateur
+exports.deactivateUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const { reason } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+      return res.status(400).json({ message: 'Identifiant utilisateur invalide' });
+    }
+
+    const targetUser = await User.findById(targetUserId);
+
+    if (!targetUser) {
+      return res.status(404).json({ message: 'Utilisateur introuvable' });
+    }
+
+    if (!targetUser.isActive) {
+      return res.status(400).json({ message: 'Ce compte est déjà désactivé' });
+    }
+
+    targetUser.isActive = false;
+    targetUser.deactivatedAt = new Date();
+    targetUser.deactivatedBy = req.user.userId;
+    targetUser.deactivationReason = reason || 'Aucune raison fournie';
+    await targetUser.save();
+
+    res.status(200).json({
+      message: 'Compte utilisateur désactivé avec succès',
+      user: sanitizeUser(targetUser),
+    });
+  } catch (error) {
+    console.error('❌ Erreur lors de la désactivation:', error);
+    res.status(500).json({ message: 'Impossible de désactiver ce compte pour le moment.' });
+  }
+};
+
+// Activer un compte utilisateur
+exports.activateUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+      return res.status(400).json({ message: 'Identifiant utilisateur invalide' });
+    }
+
+    const targetUser = await User.findById(targetUserId);
+
+    if (!targetUser) {
+      return res.status(404).json({ message: 'Utilisateur introuvable' });
+    }
+
+    if (targetUser.isActive) {
+      return res.status(400).json({ message: 'Ce compte est déjà actif' });
+    }
+
+    targetUser.isActive = true;
+    targetUser.deactivatedAt = null;
+    targetUser.deactivatedBy = null;
+    targetUser.deactivationReason = null;
+    await targetUser.save();
+
+    res.status(200).json({
+      message: 'Compte utilisateur activé avec succès',
+      user: sanitizeUser(targetUser),
+    });
+  } catch (error) {
+    console.error('❌ Erreur lors de l\'activation:', error);
+    res.status(500).json({ message: 'Impossible d\'activer ce compte pour le moment.' });
+  }
+};
+
+// Supprimer un compte utilisateur
+exports.deleteUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+      return res.status(400).json({ message: 'Identifiant utilisateur invalide' });
+    }
+
+    const targetUser = await User.findById(targetUserId);
+
+    if (!targetUser) {
+      return res.status(404).json({ message: 'Utilisateur introuvable' });
+    }
+
+    // Empêcher la suppression de son propre compte
+    if (targetUserId === req.user.userId) {
+      return res.status(403).json({ message: 'Vous ne pouvez pas supprimer votre propre compte' });
+    }
+
+    await User.findByIdAndDelete(targetUserId);
+
+    res.status(200).json({
+      message: 'Compte utilisateur supprimé avec succès',
+    });
+  } catch (error) {
+    console.error('❌ Erreur lors de la suppression:', error);
+    res.status(500).json({ message: 'Impossible de supprimer ce compte pour le moment.' });
+  }
+};
+

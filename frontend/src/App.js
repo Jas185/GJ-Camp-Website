@@ -10,17 +10,25 @@ import VerifyEmailPage from './pages/VerifyEmailPage';
 import ResendVerificationPage from './pages/ResendVerificationPage';
 import CampRegistrationPage from './pages/CampRegistrationPage';
 import CampRegistrationNewPage from './pages/CampRegistrationNewPage';
+import GuestRegistrationPage from './pages/GuestRegistrationPage';
 import LogoShowcasePage from './pages/LogoShowcasePage';
 import RegistrationDashboard from './pages/RegistrationDashboard';
 import UserDashboard from './pages/UserDashboard';
 import ActivitiesManagement from './pages/ActivitiesManagement';
 import ProgrammePage from './pages/ProgrammePage';
 import ActivitiesPage from './pages/ActivitiesPage';
+import ActivityTrackingPage from './pages/ActivityTrackingPage';
 import ProfilePage from './pages/ProfilePage';
-import NewsletterPage from './pages/NewsletterPage';
+import AboutPage from './pages/AboutPage';
+import NewsletterPageNew from './pages/NewsletterPageNew';
 import UserManagementPage from './pages/UserManagementPage';
+import PayoutManagementPage from './pages/PayoutManagementPage';
 import AccessDeniedPage from './pages/AccessDeniedPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
+import DataManagementPage from './pages/DataManagementPage';
 import GuardedRoute from './components/GuardedRoute';
+import CookieConsent from './components/CookieConsent';
 import './styles/App.css';
 
 function App() {
@@ -37,6 +45,10 @@ function App() {
             <Route path="/resend-verification" element={<ResendVerificationPage />} />
             <Route path="/inscription-camp" element={<CampRegistrationPage />} />
             <Route path="/inscription" element={<CampRegistrationNewPage />} />
+            <Route
+              path="/inscription-invite"
+              element={<GuardedRoute element={<GuestRegistrationPage />} />}
+            />
             <Route path="/logos" element={<LogoShowcasePage />} />
             <Route
               path="/tableau-de-bord"
@@ -65,6 +77,15 @@ function App() {
               }
             />
             <Route
+              path="/suivi-activites"
+              element={
+                <GuardedRoute
+                  element={<ActivityTrackingPage />}
+                  roles={['responsable', 'admin']}
+                />
+              }
+            />
+            <Route
               path="/gestion/utilisateurs"
               element={
                 <GuardedRoute
@@ -73,12 +94,26 @@ function App() {
                 />
               }
             />
+            <Route
+              path="/gestion/redistributions"
+              element={
+                <GuardedRoute
+                  element={<PayoutManagementPage />}
+                  roles={['responsable', 'admin']}
+                />
+              }
+            />
             <Route path="/programme" element={<ProgrammePage />} />
             <Route path="/activites" element={<ActivitiesPage />} />
-            <Route path="/newsletter" element={<NewsletterPage />} />
+            <Route path="/a-propos" element={<AboutPage />} />
+            <Route path="/newsletter" element={<NewsletterPageNew />} />
+            <Route path="/politique-confidentialite" element={<PrivacyPolicyPage />} />
+            <Route path="/conditions-utilisation" element={<TermsOfServicePage />} />
+            <Route path="/gestion-donnees" element={<DataManagementPage />} />
             <Route path="/acces-refuse" element={<AccessDeniedPage />} />
           </Routes>
           <Footer />
+          <CookieConsent />
         </div>
       </AuthProvider>
     </Router>

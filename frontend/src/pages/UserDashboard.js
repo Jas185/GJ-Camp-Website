@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import PayPalButton from '../components/PayPalButton';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import '../styles/UserDashboard.css';
@@ -68,15 +69,21 @@ const DollarIcon = ({ size = 24, color = "#9b59b6" }) => (
 const UserDashboard = () => {
   const [userInfo, setUserInfo] = useState(null);
   const [registration, setRegistration] = useState(null);
+  const [guests, setGuests] = useState([]);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedGuest, setSelectedGuest] = useState(null);
+  const [partialAmount, setPartialAmount] = useState(0);
+  const [showPayPalButton, setShowPayPalButton] = useState(false);
   const { token, user } = useContext(AuthContext);
 
   useEffect(() => {
     if (token) {
       fetchUserData();
       fetchUserRegistration();
+      fetchUserGuests();
       fetchActivities();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -121,6 +128,19 @@ const UserDashboard = () => {
       console.error('❌ Erreur lors de la récupération de l\'inscription:', err);
       console.error('Détails:', err.response?.data);
       setLoading(false);
+    }
+  };
+
+  const fetchUserGuests = async () => {
+    try {
+      const response = await axios.get('/api/registration/mes-invites', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('👥 Invités récupérés:', response.data.guests);
+      setGuests(response.data.guests || []);
+    } catch (err) {
+      console.error('❌ Erreur lors de la récupération des invités:', err);
+      setGuests([]);
     }
   };
 
@@ -179,6 +199,57 @@ const UserDashboard = () => {
       alert('Erreur lors de l\'upload de la photo');
     } finally {
       setUploadingPhoto(false);
+    }
+  };
+
+  const handleAdditionalPayment = async (details) => {
+    try {
+      const targetRegistration = selectedGuest || registration;
+      const response = await axios.put(
+        `/api/registration/${targetRegistration._id}/additional-payment`,
+        {
+          additionalAmount: parseFloat(partialAmount),
+          paymentDetails: {
+            orderID: details.id,
+            payerID: details.payer.payer_id,
+            payerEmail: details.payer.email_address,
+            status: details.status,
+            amountPaid: parseFloat(partialAmount)
+          }
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (selectedGuest) {
+        // Paiement pour un invité
+        const newRemaining = targetRegistration.amountRemaining - parseFloat(partialAmount);
+        if (newRemaining === 0) {
+          alert('🎉 Paiement réussi ! L\'inscription de votre invité est maintenant complète.');
+        } else {
+          alert(`✅ Paiement de ${partialAmount}€ réussi ! Reste à payer : ${newRemaining}€`);
+        }
+        fetchUserGuests();
+      } else {
+        // Paiement pour soi-même
+        setRegistration(response.data.registration);
+        const newRemaining = targetRegistration.amountRemaining - parseFloat(partialAmount);
+        if (newRemaining === 0) {
+          alert('🎉 Paiement réussi ! Votre inscription est maintenant complète.');
+        } else {
+          alert(`✅ Paiement de ${partialAmount}€ réussi ! Reste à payer : ${newRemaining}€`);
+        }
+        fetchUserRegistration();
+      }
+      
+      setShowPaymentModal(false);
+      setSelectedGuest(null);
+      setPartialAmount(0);
+      setShowPayPalButton(false);
+    } catch (err) {
+      console.error('Erreur lors du paiement supplémentaire:', err);
+      alert('❌ Erreur lors du paiement. Veuillez réessayer.');
     }
   };
 
@@ -429,6 +500,22 @@ const UserDashboard = () => {
                   )}
                 </div>
               </div>
+
+              {/* Bouton de paiement du solde si inscription partielle */}
+              {registration.paymentStatus === 'partial' && registration.amountRemaining > 0 && (
+                <div className="payment-action-section">
+                  <button 
+                    className="btn-pay-remaining"
+                    onClick={() => {
+                      setPartialAmount(registration.amountRemaining);
+                      setShowPayPalButton(false);
+                      setShowPaymentModal(true);
+                    }}
+                  >
+                    💳 Payer le solde ({registration.amountRemaining}€)
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="no-inscription">
@@ -481,7 +568,153 @@ const UserDashboard = () => {
             )}
           </div>
         </div>
+
+        {/* Section Invités */}
+        {registration && (
+          <div className="dashboard-card guests-card">
+            <div className="card-header">
+              <UserIcon size={24} color="#667eea" />
+              <h2>Mes Invités ({guests.length})</h2>
+            </div>
+            <div className="guests-content">
+              {guests.length > 0 ? (
+                <div className="guests-list">
+                  {guests.map((guest, index) => (
+                    <div key={guest._id} className="guest-item">
+                      <div className="guest-number">#{index + 1}</div>
+                      <div className="guest-info">
+                        <h4>{guest.firstName} {guest.lastName}</h4>
+                        <p className="guest-email">✉️ {guest.email}</p>
+                        <p className="guest-refuge">🏛️ {guest.refuge}</p>
+                      </div>
+                      <div className="guest-payment">
+                        <div className={`guest-status ${getStatusBadge(guest.paymentStatus).class}`}>
+                          {getStatusBadge(guest.paymentStatus).icon}
+                          <span>{getStatusBadge(guest.paymentStatus).text}</span>
+                        </div>
+                        <p className="guest-amount">
+                          <strong>{guest.amountPaid}€</strong> / 120€
+                        </p>
+                        {guest.paymentStatus === 'partial' && guest.amountRemaining > 0 && (
+                          <button 
+                            className="btn-pay-guest-remaining"
+                            onClick={() => {
+                              setSelectedGuest(guest);
+                              setPartialAmount(guest.amountRemaining);
+                              setShowPayPalButton(false);
+                              setShowPaymentModal(true);
+                            }}
+                          >
+                            💳 Payer (reste {guest.amountRemaining}€)
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-guests">
+                  <p>Vous n'avez pas encore inscrit d'invité.</p>
+                  <button 
+                    className="add-guest-btn"
+                    onClick={() => window.location.href = '/inscription-invite'}
+                  >
+                    👥 Inscrire un invité
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Modal de paiement du solde */}
+      {showPaymentModal && (registration || selectedGuest) && (
+        <div className="payment-modal-overlay" onClick={() => {
+          setShowPaymentModal(false);
+          setSelectedGuest(null);
+          setPartialAmount(0);
+          setShowPayPalButton(false);
+        }}>
+          <div className="payment-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="payment-modal-header">
+              <h3>💳 Paiement supplémentaire</h3>
+              {selectedGuest && <p className="guest-name-modal">Pour : {selectedGuest.firstName} {selectedGuest.lastName}</p>}
+              <button className="modal-close" onClick={() => {
+                setShowPaymentModal(false);
+                setSelectedGuest(null);
+                setPartialAmount(0);
+                setShowPayPalButton(false);
+              }}>×</button>
+            </div>
+            <div className="payment-modal-body">
+              <div className="payment-summary-modal">
+                <div className="summary-row">
+                  <span>Montant total :</span>
+                  <strong>120€</strong>
+                </div>
+                <div className="summary-row">
+                  <span>Déjà payé :</span>
+                  <strong className="text-green">{(selectedGuest || registration).amountPaid}€</strong>
+                </div>
+                <div className="summary-row total">
+                  <span>Reste à payer :</span>
+                  <strong className="text-red">{(selectedGuest || registration).amountRemaining}€</strong>
+                </div>
+              </div>
+              
+              <div className="partial-payment-input">
+                <label htmlFor="partialAmount">Montant à payer maintenant (€) :</label>
+                <input
+                  type="number"
+                  id="partialAmount"
+                  value={partialAmount}
+                  onChange={(e) => {
+                    setPartialAmount(e.target.value);
+                    setShowPayPalButton(false);
+                  }}
+                  min="1"
+                  max={(selectedGuest || registration).amountRemaining}
+                  step="1"
+                />
+                <p className="payment-note">
+                  Vous pouvez payer de 1€ à {(selectedGuest || registration).amountRemaining}€
+                </p>
+                
+                {!showPayPalButton && partialAmount > 0 && partialAmount <= (selectedGuest || registration).amountRemaining && (
+                  <button 
+                    className="btn-validate-amount"
+                    onClick={() => setShowPayPalButton(true)}
+                  >
+                    ✓ Valider et payer {partialAmount}€
+                  </button>
+                )}
+              </div>
+
+              {showPayPalButton && partialAmount > 0 && partialAmount <= (selectedGuest || registration).amountRemaining && (
+                <div className="paypal-container-modal">
+                  <PayPalButton
+                    amount={parseFloat(partialAmount)}
+                    onSuccess={handleAdditionalPayment}
+                    onError={() => alert('❌ Erreur lors du paiement')}
+                    onCancel={() => {
+                      setShowPayPalButton(false);
+                    }}
+                  />
+                </div>
+              )}
+              
+              {partialAmount > (selectedGuest || registration).amountRemaining && (
+                <p className="error-message">Le montant ne peut pas dépasser {(selectedGuest || registration).amountRemaining}€</p>
+              )}
+              
+              {partialAmount < 1 && partialAmount !== 0 && (
+                <p className="error-message">Le montant minimum est de 1€</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

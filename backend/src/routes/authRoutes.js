@@ -34,4 +34,12 @@ router.patch('/update-selected-activities', auth, authController.updateSelectedA
 // Enregistrer les choix d'activités par créneau
 router.patch('/update-selected-creneaux', auth, authController.updateSelectedCreneaux);
 
+// Routes RGPD
+router.get('/my-data', auth, authController.downloadMyData);
+router.delete('/delete-account', auth, authController.deleteAccount);
+
+// Paramètres de notifications
+router.put('/notification-settings', auth, authController.updateNotificationSettings);
+router.put('/push-player-id', auth, authController.updatePushPlayerId);
+
 module.exports = router;

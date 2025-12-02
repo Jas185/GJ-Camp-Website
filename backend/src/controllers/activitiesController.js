@@ -81,7 +81,7 @@ exports.createActivity = async (req, res) => {
 // ✏️ Modifier une activité
 exports.updateActivity = async (req, res) => {
   try {
-    const { titre, description, type, heureDebut, heureFin, jour } = req.body;
+    const { titre, description, type, heureDebut, heureFin, jour, referent } = req.body;
     const activity = await Activity.findById(req.params.id);
     
     if (!activity) {
@@ -95,6 +95,7 @@ exports.updateActivity = async (req, res) => {
     if (heureDebut !== undefined) activity.heureDebut = heureDebut;
     if (heureFin !== undefined) activity.heureFin = heureFin;
     if (jour) activity.jour = parseInt(jour);
+    if (referent !== undefined) activity.referent = referent || null;
     
     // Gérer la mise à jour de l'image
     if (req.files && req.files.image) {

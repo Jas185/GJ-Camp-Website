@@ -24,6 +24,7 @@ const Header = () => {
   const canAccessInscriptions = ['referent', 'responsable', 'admin'].includes(normalizedRole);
   const canAccessActivities = ['referent', 'responsable', 'admin'].includes(normalizedRole);
   const canAccessUserAdmin = ['responsable', 'admin'].includes(normalizedRole);
+  const canAccessPayouts = ['responsable', 'admin'].includes(normalizedRole);
 
   return (
     <header className="header">
@@ -77,8 +78,14 @@ const Header = () => {
                 {canAccessActivities && (
                   <li><Link to="/gestion-activites">Gestion des activités</Link></li>
                 )}
+                {canAccessPayouts && (
+                  <li><Link to="/suivi-activites">📊 Suivi des activités</Link></li>
+                )}
                 {canAccessUserAdmin && (
                   <li><Link to="/gestion/utilisateurs">Gestion des utilisateurs</Link></li>
+                )}
+                {canAccessPayouts && (
+                  <li><Link to="/gestion/redistributions">Gestion des redistributions</Link></li>
                 )}
               </ul>
             </li>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PayPal Client ID</title>
+</head>
+<body>
+    <h1>Test d'intégration PayPal</h1>
+    <div id="status"></div>
+    <div id="paypal-button-container"></div>
+
+    <script>
+        const clientId = 'AdT-LwZtwJCWWY-mQxdypz0Ael6KiDY4Puw2QOrgppkh7379iy-cpwsC1a4u9RfSrQC9pqFX-FOFqWTb';
+        const statusDiv = document.getElementById('status');
+        
+        console.log('🔍 Test du Client ID PayPal...');
+        console.log('Client ID:', clientId);
+        
+        statusDiv.innerHTML = '<p>⏳ Chargement du SDK PayPal...</p>';
+
+        // Charger le SDK PayPal
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR`;
+        script.async = true;
+        
+        script.onload = () => {
+            console.log('✅ SDK PayPal chargé avec succès');
+            statusDiv.innerHTML = '<p style="color: green;">✅ SDK PayPal chargé avec succès</p><p>⏳ Rendu des boutons...</p>';
+            
+            // Rendre les boutons PayPal
+            window.paypal.Buttons({
+                style: {
+                    layout: 'vertical',
+                    color: 'blue',
+                    shape: 'rect',
+                    label: 'paypal'
+                },
+                createOrder: (data, actions) => {
+                    console.log('💰 Création de la commande de test pour 20€');
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                currency_code: 'EUR',
+                                value: '20.00'
+                            },
+                            description: 'Test PayPal - 20€'
+                        }]
+                    });
+                },
+                onApprove: async (data, actions) => {
+                    console.log('✅ Paiement approuvé');
+                    const details = await actions.order.capture();
+                    console.log('✅ Paiement capturé:', details);
+                    alert('Paiement réussi ! Transaction ID: ' + details.id);
+                },
+                onError: (err) => {
+                    console.error('❌ Erreur PayPal:', err);
+                    statusDiv.innerHTML += '<p style="color: red;">❌ Erreur: ' + err.message + '</p>';
+                },
+                onCancel: (data) => {
+                    console.log('⚠️ Paiement annulé');
+                    alert('Paiement annulé');
+                }
+            }).render('#paypal-button-container')
+            .then(() => {
+                console.log('✅ Boutons PayPal rendus avec succès');
+                statusDiv.innerHTML = '<p style="color: green;">✅ Boutons PayPal rendus avec succès</p>';
+            })
+            .catch(err => {
+                console.error('❌ Erreur lors du rendu:', err);
+                statusDiv.innerHTML = '<p style="color: red;">❌ Erreur lors du rendu: ' + err.message + '</p>';
+            });
+        };
+        
+        script.onerror = (err) => {
+            console.error('❌ Erreur de chargement du SDK:', err);
+            statusDiv.innerHTML = '<p style="color: red;">❌ Erreur de chargement du SDK PayPal. Vérifiez le Client ID.</p>';
+        };
+        
+        document.body.appendChild(script);
+    </script>
+</body>
+</html>

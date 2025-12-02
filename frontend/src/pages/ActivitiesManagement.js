@@ -53,7 +53,8 @@ function ActivitiesManagement() {
     type: 'optionnelle',
     heureDebut: '',
     heureFin: '',
-    jour: 1
+    jour: 1,
+    referent: ''
   });
 
   const [activities, setActivities] = useState([]);
@@ -67,10 +68,29 @@ function ActivitiesManagement() {
   const [submitting, setSubmitting] = useState(false);
   const [detailActivity, setDetailActivity] = useState(null);
   const [selectedJour, setSelectedJour] = useState(null);
+  const [responsables, setResponsables] = useState([]);
 
   useEffect(() => {
     fetchActivities();
+    fetchResponsables();
   }, []);
+
+  const fetchResponsables = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/users', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Filtrer seulement les admins et responsables
+      const respList = response.data.filter(u => 
+        u.role === 'responsable' || u.role === 'admin'
+      );
+      setResponsables(respList);
+      console.log(`👥 ${respList.length} responsables chargés`);
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des responsables:', error);
+    }
+  };
 
   const fetchActivities = async () => {
     try {
@@ -140,7 +160,8 @@ function ActivitiesManagement() {
         type: activity.type,
         heureDebut: activity.heureDebut || '',
         heureFin: activity.heureFin || '',
-        jour: activity.jour || 1
+        jour: activity.jour || 1,
+        referent: activity.referent?._id || activity.referent || ''
       });
       setImagePreview(activity.image ? `http://localhost:5000${activity.image}` : null);
     } else {
@@ -182,6 +203,7 @@ function ActivitiesManagement() {
       formDataToSend.append('jour', formData.jour);
       if (formData.heureDebut) formDataToSend.append('heureDebut', formData.heureDebut);
       if (formData.heureFin) formDataToSend.append('heureFin', formData.heureFin);
+      if (formData.referent) formDataToSend.append('referent', formData.referent);
       
       if (imageFile) {
         formDataToSend.append('image', imageFile);
@@ -394,6 +416,22 @@ function ActivitiesManagement() {
                   <option value={2}>Jour 2</option>
                   <option value={3}>Jour 3</option>
                   <option value={4}>Jour 4</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>👤 Référent de l'activité</label>
+                <select
+                  name="referent"
+                  value={formData.referent}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Aucun référent</option>
+                  {responsables.map(resp => (
+                    <option key={resp._id} value={resp._id}>
+                      {resp.firstName} {resp.lastName} ({resp.role})
+                    </option>
+                  ))}
                 </select>
               </div>
 

@@ -20,6 +20,7 @@ const UserManagementPage = () => {
   const [filters, setFilters] = useState({ search: '', role: 'all' });
   const [feedback, setFeedback] = useState({ type: null, message: '' });
   const [verifyingUserId, setVerifyingUserId] = useState(null);
+  const [updatingPermissionUserId, setUpdatingPermissionUserId] = useState(null);
 
   const isAdmin = user?.role === 'admin';
   const canView = useMemo(() => ['responsable', 'admin'].includes(user?.role), [user]);
@@ -128,6 +129,43 @@ const UserManagementPage = () => {
     }
   };
 
+  const handlePermissionToggle = async (userId, currentPermission) => {
+    if (!isAdmin && user?.role !== 'responsable') {
+      setFeedback({ type: 'error', message: 'Seuls les responsables et administrateurs peuvent gérer les permissions' });
+      return;
+    }
+
+    setUpdatingPermissionUserId(userId);
+    setFeedback({ type: null, message: '' });
+
+    try {
+      const response = await axios.patch(
+        `/api/users/${userId}/permissions`,
+        { canCreatePost: !currentPermission },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const updatedUser = response.data.user || {};
+      const normalizedUser = {
+        ...updatedUser,
+        role: updatedUser.role === 'user' ? 'utilisateur' : updatedUser.role,
+      };
+
+      setUsers((prev) => prev.map((item) => (
+        item._id === normalizedUser._id
+          ? { ...item, ...normalizedUser }
+          : item
+      )));
+
+      setFeedback({ type: 'success', message: response.data.message || 'Permission mise à jour avec succès' });
+    } catch (error) {
+      console.error('❌ Erreur mise à jour permission:', error);
+      setFeedback({ type: 'error', message: error.response?.data?.message || 'Impossible de mettre à jour la permission' });
+    } finally {
+      setUpdatingPermissionUserId(null);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="user-management-container">
@@ -198,10 +236,10 @@ const UserManagementPage = () => {
               <span>Contact</span>
               <span>Rôle</span>
               <span>Statut</span>
+              <span>Permissions</span>
               <span>Actions</span>
             </div>
-            <div className="table-body">
-              {filteredUsers.map((item) => (
+            <div className="table-body">{filteredUsers.map((item) => (
                 <div className="table-row" key={item._id}>
                   <div className="table-cell">
                     <div className="user-name">{item.firstName} {item.lastName}</div>
@@ -227,7 +265,25 @@ const UserManagementPage = () => {
                     </div>
                   </div>
                   <div className="table-cell">
-                    {isAdmin ? (
+                    {(isAdmin || user?.role === 'responsable') && !['admin', 'responsable'].includes(item.role) ? (
+                      <label className="permission-toggle">
+                        <input
+                          type="checkbox"
+                          checked={item.canCreatePost !== false}
+                          onChange={() => handlePermissionToggle(item._id, item.canCreatePost !== false)}
+                          disabled={updatingPermissionUserId === item._id}
+                        />
+                        <span className="permission-label">
+                          {item.canCreatePost !== false ? 'Peut créer des posts' : 'Création désactivée'}
+                        </span>
+                      </label>
+                    ) : (
+                      <span className="badge badge-info">
+                        {['admin', 'responsable'].includes(item.role) ? 'Tous droits' : 'N/A'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="table-cell">{isAdmin ? (
                       <div className="actions-stack">
                         <select
                           value={item.role}

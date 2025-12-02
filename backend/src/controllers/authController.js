@@ -360,3 +360,150 @@ exports.updateSelectedActivities = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la mise à jour des activités' });
   }
 };
+
+// ===== ENDPOINTS RGPD =====
+
+// @route   GET /api/auth/my-data
+// @desc    Télécharger toutes ses données personnelles (droit d'accès RGPD)
+exports.downloadMyData = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // Récupérer toutes les données de l'utilisateur
+    const user = await User.findById(userId).select('-password');
+    
+    // Récupérer les inscriptions de l'utilisateur
+    const Registration = require('../models/Registration');
+    const registrations = await Registration.find({
+      $or: [
+        { user: userId, isGuest: false },
+        { user: userId, isGuest: { $exists: false } }
+      ]
+    });
+
+    // Récupérer les invités inscrits par l'utilisateur
+    const guests = await Registration.find({ registeredBy: userId, isGuest: true });
+
+    // Compiler toutes les données
+    const userData = {
+      exportDate: new Date().toISOString(),
+      user: user.toObject(),
+      registrations: registrations.map(r => r.toObject()),
+      guests: guests.map(g => g.toObject()),
+      gdprInfo: {
+        dataController: 'Génération Josué - CRPT',
+        exportReason: 'Droit d\'accès RGPD (Article 15)',
+        contact: 'dpo@gj-camp.fr'
+      }
+    };
+
+    // Envoyer en JSON
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="mes-donnees-gj-${Date.now()}.json"`);
+    res.status(200).json(userData);
+
+    console.log(`📥 Données téléchargées par l'utilisateur ${user.email}`);
+  } catch (error) {
+    console.error('Erreur lors du téléchargement des données:', error);
+    res.status(500).json({ message: 'Erreur lors du téléchargement de vos données' });
+  }
+};
+
+// @route   DELETE /api/auth/delete-account
+// @desc    Supprimer son compte et toutes ses données (droit à l'effacement RGPD)
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable' });
+    }
+
+    // Supprimer toutes les inscriptions de l'utilisateur
+    const Registration = require('../models/Registration');
+    await Registration.deleteMany({
+      $or: [
+        { user: userId },
+        { registeredBy: userId }
+      ]
+    });
+
+    // Supprimer le compte utilisateur
+    await User.findByIdAndDelete(userId);
+
+    console.log(`🗑️ Compte supprimé pour ${user.email} (RGPD - Droit à l'effacement)`);
+    
+    res.status(200).json({ 
+      message: '✅ Votre compte et toutes vos données ont été supprimés avec succès.',
+      deletedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Erreur lors de la suppression du compte:', error);
+    res.status(500).json({ message: 'Erreur lors de la suppression du compte' });
+  }
+};
+
+// Mettre à jour les paramètres de notifications
+exports.updateNotificationSettings = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { emailNotifications, smsNotifications, pushNotifications, phoneNumber } = req.body;
+
+    const updateData = {
+      emailNotifications: emailNotifications ?? true,
+      smsNotifications: smsNotifications ?? false,
+      pushNotifications: pushNotifications ?? false
+    };
+
+    if (phoneNumber !== undefined) {
+      updateData.phoneNumber = phoneNumber;
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable' });
+    }
+
+    console.log(`✅ Paramètres de notifications mis à jour pour ${user.email}`);
+    res.json({ 
+      message: 'Paramètres enregistrés avec succès',
+      user 
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour notifications:', error);
+    res.status(500).json({ message: 'Erreur lors de la sauvegarde' });
+  }
+};
+
+// Enregistrer l'ID du player OneSignal/Firebase
+exports.updatePushPlayerId = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { pushPlayerId } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { pushPlayerId, pushNotifications: true },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable' });
+    }
+
+    console.log(`✅ Push Player ID enregistré pour ${user.email}`);
+    res.json({ 
+      message: 'Push activé avec succès',
+      user 
+    });
+  } catch (error) {
+    console.error('Erreur enregistrement push ID:', error);
+    res.status(500).json({ message: 'Erreur lors de l\'activation' });
+  }
+};

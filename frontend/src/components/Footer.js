@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import ModernLogo from './ModernLogo';
 import '../styles/App.css';
 
@@ -25,12 +26,13 @@ const Footer = () => {
         </div>
         <div className="footer-right">
           <nav className="footer-nav">
-            <a className="footer-link" href="#apropos">GJ CRPT</a>
-            <a className="footer-link" href="#activites">Activités</a>
-            <a className="footer-link" href="#contact">Contact</a>
+            <Link className="footer-link" to="/a-propos">GJ CRPT</Link>
+            <Link className="footer-link" to="/activites">Activités</Link>
+            <Link className="footer-link" to="/politique-confidentialite">Confidentialité</Link>
+            <Link className="footer-link" to="/conditions-utilisation">CGU</Link>
+            <Link className="footer-link" to="/gestion-donnees">Mes Données</Link>
           </nav>
-          <div className="social-links">
-            <a href="https://www.youtube.com" className="social-icon" target="_blank" rel="noopener noreferrer">
+          <div className="social-links">\n            <a href="https://www.youtube.com" className="social-icon" target="_blank" rel="noopener noreferrer">
               <i className="fab fa-youtube"></i>
             </a>
             <a href="https://www.instagram.com" className="social-icon" target="_blank" rel="noopener noreferrer">

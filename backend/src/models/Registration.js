@@ -6,6 +6,15 @@ const registrationSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  isGuest: {
+    type: Boolean,
+    default: false
+  },
+  registeredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
   firstName: {
     type: String,
     required: [true, 'Le prénom est obligatoire'],
@@ -72,6 +81,17 @@ const registrationSchema = new mongoose.Schema({
     type: String,
     enum: ['unpaid', 'partial', 'paid'],
     default: 'unpaid'
+  },
+  paymentDetails: {
+    orderId: String,
+    payerId: String,
+    payerEmail: String,
+    status: String,
+    amountPaid: Number,
+    paymentDate: {
+      type: Date,
+      default: Date.now
+    }
   }
 }, {
   timestamps: true
