@@ -1,0 +1,47 @@
+# Dépendances
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Environnement
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.docker
+
+# Build
+build/
+dist/
+.next/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Tests
+coverage/
+.nyc_output/
+
+# Uploads (données sensibles)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Base de données locale
+*.db
+*.sqlite
+
+# Docker volumes
+mongodb_data/
