@@ -15,17 +15,27 @@ router.get('/statistics', auth, requireVerifiedEmail, authorize(...ADMIN_ROLES),
       .populate('referent', 'firstName lastName email')
       .sort({ jour: 1, heureDebut: 1 });
 
+    // Récupérer tous les utilisateurs avec leurs selectedCreneaux
+    const allUsers = await User.find({}).select('firstName lastName email phone refuge sex dateOfBirth selectedCreneaux selectedActivities');
+
     // Pour chaque activité, compter les inscrits
     const statistiques = await Promise.all(activities.map(async (activity) => {
-      // Compter le nombre d'utilisateurs ayant sélectionné cette activité
-      const inscritCount = await User.countDocuments({
-        selectedActivities: activity._id
+      // Filtrer les utilisateurs qui ont sélectionné cette activité dans selectedCreneaux OU selectedActivities
+      const inscrits = allUsers.filter(user => {
+        // Vérifier dans selectedCreneaux (nouveau système)
+        const isInCreneaux = user.selectedCreneaux && 
+          Object.values(user.selectedCreneaux).some(activityId => 
+            activityId && activityId.toString() === activity._id.toString()
+          );
+        
+        // Vérifier dans selectedActivities (ancien système)
+        const isInActivities = user.selectedActivities && 
+          user.selectedActivities.some(activityId => 
+            activityId && activityId.toString() === activity._id.toString()
+          );
+        
+        return isInCreneaux || isInActivities;
       });
-
-      // Récupérer la liste des utilisateurs inscrits avec leurs infos
-      const inscrits = await User.find({
-        selectedActivities: activity._id
-      }).select('firstName lastName email phone refuge sex dateOfBirth');
 
       return {
         activity: {
@@ -38,8 +48,17 @@ router.get('/statistics', auth, requireVerifiedEmail, authorize(...ADMIN_ROLES),
           image: activity.image,
           referent: activity.referent
         },
-        inscritCount,
-        inscrits
+        inscritCount: inscrits.length,
+        inscrits: inscrits.map(u => ({
+          _id: u._id,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          email: u.email,
+          phone: u.phone,
+          refuge: u.refuge,
+          sex: u.sex,
+          dateOfBirth: u.dateOfBirth
+        }))
       };
     }));
 
@@ -62,10 +81,25 @@ router.get('/:activityId/participants', auth, requireVerifiedEmail, authorize(..
       return res.status(404).json({ message: 'Activité non trouvée' });
     }
 
-    // Récupérer les participants
-    const participants = await User.find({
-      selectedActivities: activityId
-    }).select('firstName lastName email phone refuge sex dateOfBirth selectedActivities');
+    // Récupérer tous les utilisateurs
+    const allUsers = await User.find({}).select('firstName lastName email phone refuge sex dateOfBirth selectedCreneaux selectedActivities');
+
+    // Filtrer les participants qui ont sélectionné cette activité
+    const participants = allUsers.filter(user => {
+      // Vérifier dans selectedCreneaux (nouveau système)
+      const isInCreneaux = user.selectedCreneaux && 
+        Object.values(user.selectedCreneaux).some(actId => 
+          actId && actId.toString() === activityId
+        );
+      
+      // Vérifier dans selectedActivities (ancien système)
+      const isInActivities = user.selectedActivities && 
+        user.selectedActivities.some(actId => 
+          actId && actId.toString() === activityId
+        );
+      
+      return isInCreneaux || isInActivities;
+    });
 
     console.log(`📋 ${participants.length} participants pour l'activité "${activity.titre}"`);
     res.json({
@@ -89,15 +123,31 @@ router.get('/:activityId/export', auth, requireVerifiedEmail, authorize(...ADMIN
       return res.status(404).json({ message: 'Activité non trouvée' });
     }
 
-    const participants = await User.find({
-      selectedActivities: activityId
-    }).select('firstName lastName email phone refuge sex dateOfBirth');
+    // Récupérer tous les utilisateurs
+    const allUsers = await User.find({}).select('firstName lastName email phone refuge sex dateOfBirth selectedCreneaux selectedActivities');
+
+    // Filtrer les participants qui ont sélectionné cette activité
+    const participants = allUsers.filter(user => {
+      // Vérifier dans selectedCreneaux (nouveau système)
+      const isInCreneaux = user.selectedCreneaux && 
+        Object.values(user.selectedCreneaux).some(actId => 
+          actId && actId.toString() === activityId
+        );
+      
+      // Vérifier dans selectedActivities (ancien système)
+      const isInActivities = user.selectedActivities && 
+        user.selectedActivities.some(actId => 
+          actId && actId.toString() === activityId
+        );
+      
+      return isInCreneaux || isInActivities;
+    });
 
     // Créer le CSV
     const csvHeader = 'Prénom,Nom,Email,Téléphone,Refuge,Sexe,Date de naissance\n';
     const csvRows = participants.map(p => {
       const dob = p.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString('fr-FR') : '';
-      return `"${p.firstName}","${p.lastName}","${p.email}","${p.phone}","${p.refuge}","${p.sex}","${dob}"`;
+      return `"${p.firstName}","${p.lastName}","${p.email}","${p.phone || ''}","${p.refuge || ''}","${p.sex || ''}","${dob}"`;
     }).join('\n');
 
     const csv = csvHeader + csvRows;
