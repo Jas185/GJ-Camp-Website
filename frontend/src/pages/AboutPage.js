@@ -1,9 +1,13 @@
 import React from 'react';
+import DynamicCarousel from '../components/DynamicCarousel';
 import '../styles/AboutPage.css';
 
 const AboutPage = () => {
   return (
     <div className="about-page">
+      {/* Carrousel dynamique pour la page À propos */}
+      <DynamicCarousel page="about" height={400} />
+
       {/* Hero Section */}
       <section className="about-hero">
         <div className="hero-overlay">

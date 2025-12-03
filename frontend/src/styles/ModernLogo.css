@@ -6,6 +6,23 @@
   align-items: center;
 }
 
+/* Logo personnalisé depuis paramètres */
+.modern-logo.custom-logo {
+  background: transparent;
+  box-shadow: none;
+}
+
+.modern-logo.custom-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.modern-logo.custom-logo:hover img {
+  transform: scale(1.05);
+}
+
 /* Tailles */
 .logo-small { width: 60px; height: 60px; }
 .logo-medium { width: 100px; height: 100px; }
@@ -421,4 +438,45 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   z-index: 10;
+}
+
+/* Animations pour le logo personnalisé */
+.modern-logo img.pulse {
+  animation: logoPulse 2s ease-in-out infinite;
+}
+
+.modern-logo img.rotate:hover {
+  transform: rotate(360deg);
+  transition: transform 1s ease;
+}
+
+.modern-logo img.bounce:hover {
+  animation: logoBounce 0.6s ease;
+}
+
+.modern-logo img.scale:hover {
+  transform: scale(1.15);
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+@keyframes logoBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-15px);
+  }
+  60% {
+    transform: translateY(-7px);
+  }
 }

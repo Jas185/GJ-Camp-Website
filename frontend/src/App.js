@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import DynamicBackground from './components/DynamicBackground';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -25,20 +26,26 @@ import UserManagementPage from './pages/UserManagementPage';
 import PayoutManagementPage from './pages/PayoutManagementPage';
 import MessagesPage from './pages/MessagesPage';
 import MessageManagementPage from './pages/MessageManagementPage';
+import SettingsPage from './pages/SettingsPage';
 import AccessDeniedPage from './pages/AccessDeniedPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import DataManagementPage from './pages/DataManagementPage';
 import GuardedRoute from './components/GuardedRoute';
 import CookieConsent from './components/CookieConsent';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import FixedLogo from './components/FixedLogo';
 import './styles/App.css';
 
 function App() {
   return (
     <Router>
       <AuthProvider>
+        <DynamicBackground page="global" />
+        <FixedLogo />
         <div className="container">
           <Header />
+          <PWAInstallPrompt />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -119,6 +126,15 @@ function App() {
                 <GuardedRoute
                   element={<MessageManagementPage />}
                   roles={['responsable', 'admin']}
+                />
+              }
+            />
+            <Route
+              path="/parametres"
+              element={
+                <GuardedRoute
+                  element={<SettingsPage />}
+                  roles={['admin']}
                 />
               }
             />

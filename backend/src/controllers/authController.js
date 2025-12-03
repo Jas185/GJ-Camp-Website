@@ -1,3 +1,16 @@
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator');
+const crypto = require('crypto');
+const { sendVerificationEmail } = require('../config/email');
+
+// Générer JWT
+const generateToken = (user) => {
+  return jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
+    expiresIn: '7d',
+  });
+};
+
 // @route   PATCH /api/auth/update-selected-creneaux
 // @desc    Enregistrer les choix d'activités par créneau pour l'utilisateur connecté
 exports.updateSelectedCreneaux = async (req, res) => {
@@ -17,18 +30,6 @@ exports.updateSelectedCreneaux = async (req, res) => {
     console.error('Erreur lors de la mise à jour des créneaux:', error);
     res.status(500).json({ message: 'Erreur lors de la mise à jour des créneaux' });
   }
-};
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const { validationResult } = require('express-validator');
-const crypto = require('crypto');
-const { sendVerificationEmail } = require('../config/email');
-
-// Générer JWT
-const generateToken = (user) => {
-  return jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
-  });
 };
 
 // @route   POST /api/auth/signup

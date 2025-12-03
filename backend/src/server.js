@@ -11,6 +11,8 @@ const postRoutes = require('./routes/postRoutes');
 const payoutRoutes = require('./routes/payoutRoutes');
 const campusRoutes = require('./routes/campusRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
+const carouselRoutes = require('./routes/carouselRoutes');
 const activityTrackingRoutes = require('./routes/activityTrackingRoutes');
 
 const app = express();
@@ -38,6 +40,8 @@ app.use('/api/payouts', payoutRoutes);
 app.use('/api/campus', campusRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/activity-tracking', activityTrackingRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/carousel', carouselRoutes);
 
 // Route de test
 app.get('/api/health', (req, res) => {

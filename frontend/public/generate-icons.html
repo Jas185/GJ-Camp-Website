@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Générateur d'icônes PWA - GJ Camp</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+    }
+    .container {
+      text-align: center;
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    canvas {
+      border: 3px solid #ddd;
+      border-radius: 10px;
+      margin: 1rem 0;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: #5568d3;
+      transform: scale(1.05);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 1rem;
+    }
+    p {
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Générateur d'icônes PWA</h1>
+    <p>Cliquez sur les boutons pour télécharger les icônes temporaires</p>
+    
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <br>
+    <button onclick="generateIcon(192)">📥 Télécharger logo-192.png</button>
+    
+    <br><br>
+    
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    <br>
+    <button onclick="generateIcon(512)">📥 Télécharger logo-512.png</button>
+    
+    <br><br>
+    <p style="font-size: 0.9rem; color: #999;">
+      💡 Ces icônes sont temporaires. Remplacez-les par votre vrai logo dans <code>/frontend/public/images/</code>
+    </p>
+  </div>
+
+  <script>
+    function generateIcon(size) {
+      const canvas = document.getElementById(`canvas${size}`);
+      const ctx = canvas.getContext('2d');
+      
+      // Fond dégradé
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#a01e1e');
+      gradient.addColorStop(1, '#7a1515');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+      
+      // Bordure dorée
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = size * 0.04;
+      ctx.strokeRect(size * 0.05, size * 0.05, size * 0.9, size * 0.9);
+      
+      // Texte GJ
+      ctx.fillStyle = '#d4af37';
+      ctx.font = `bold ${size * 0.4}px 'Poppins', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('GJ', size / 2, size / 2);
+      
+      // Sous-titre
+      ctx.fillStyle = 'white';
+      ctx.font = `${size * 0.1}px 'Poppins', sans-serif`;
+      ctx.fillText('CAMP', size / 2, size * 0.75);
+      
+      // Télécharger
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `logo-${size}.png`;
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+    
+    // Générer aperçus au chargement
+    window.onload = () => {
+      generatePreview(192);
+      generatePreview(512);
+    };
+    
+    function generatePreview(size) {
+      const canvas = document.getElementById(`canvas${size}`);
+      const ctx = canvas.getContext('2d');
+      
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#a01e1e');
+      gradient.addColorStop(1, '#7a1515');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+      
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = size * 0.04;
+      ctx.strokeRect(size * 0.05, size * 0.05, size * 0.9, size * 0.9);
+      
+      ctx.fillStyle = '#d4af37';
+      ctx.font = `bold ${size * 0.4}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('GJ', size / 2, size / 2);
+      
+      ctx.fillStyle = 'white';
+      ctx.font = `${size * 0.1}px Arial`;
+      ctx.fillText('CAMP', size / 2, size * 0.75);
+    }
+  </script>
+</body>
+</html>

@@ -2,7 +2,9 @@ import React, { useContext, useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { MailIcon } from './Icons';
+import { MailIcon, UserIcon } from './Icons';
+import SettingsIcon from './SettingsIcon';
+import ModernLogo from './ModernLogo';
 // import logoGJ from '../assets/images/logo-gj.png';
 import '../styles/App.css';
 
@@ -61,23 +63,13 @@ const Header = () => {
   const canAccessActivities = ['referent', 'responsable', 'admin'].includes(normalizedRole);
   const canAccessUserAdmin = ['responsable', 'admin'].includes(normalizedRole);
   const canAccessPayouts = ['responsable', 'admin'].includes(normalizedRole);
+  const isAdmin = normalizedRole === 'admin';
 
   return (
     <header className="header">
       <div className="header-content">
         <Link to="/" className="logo">
-          <img 
-            src={process.env.PUBLIC_URL + '/logo.jpeg'} 
-            alt="Logo Génération Josué" 
-            style={{
-              height: 64, 
-              width: 64, 
-              objectFit: 'cover',
-              borderRadius: '50%',
-              border: '3px solid #d4af37',
-              boxShadow: '0 0 10px rgba(212,175,55,0.25)'
-            }}
-          />
+          <ModernLogo />
         </Link>
         <nav className="nav-menu">
           <li><Link to="/">ACCUEIL</Link></li>
@@ -150,18 +142,30 @@ const Header = () => {
         <div className="user-menu">
           {isAuthenticated ? (
             <>
-              <span>{user?.firstName} {user?.lastName}</span>
-              <button className="btn-secondary" onClick={logout}>
-                Déconnexion
+              {isAdmin && (
+                <Link to="/parametres" className="settings-link" title="Paramètres du site">
+                  <SettingsIcon size={24} color="#d4af37" />
+                </Link>
+              )}
+              <Link to="/profil" className="user-profile-link" title={`${user?.firstName} ${user?.lastName}`}>
+                <UserIcon size={28} color="#ffffff" />
+                <span className="user-name">{user?.firstName}</span>
+              </Link>
+              <button className="btn-logout" onClick={logout} title="Déconnexion">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
               </button>
             </>
           ) : (
             <>
-              <Link to="/login">
-                <button className="btn-primary">CONNEXION</button>
+              <Link to="/login" className="auth-link" title="Connexion">
+                <UserIcon size={24} color="#d4af37" />
               </Link>
               <Link to="/signup">
-                <button className="btn-secondary">S'INSCRIRE</button>
+                <button className="btn-signup">S'INSCRIRE</button>
               </Link>
             </>
           )}

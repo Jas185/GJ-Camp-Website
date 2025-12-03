@@ -1,0 +1,173 @@
+/**
+ * DynamicCarousel.css - Styles pour le carrousel dynamique
+ */
+
+.dynamic-carousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.dynamic-carousel-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  color: #666;
+}
+
+.dynamic-carousel-loading .spinner {
+  font-size: 3rem;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.dynamic-carousel-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+  pointer-events: none;
+}
+
+.dynamic-carousel-item.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dynamic-carousel-background {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.dynamic-carousel-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.5));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  color: white;
+  text-align: center;
+}
+
+.dynamic-carousel-overlay h2 {
+  font-size: 2.5rem;
+  margin: 0 0 1rem 0;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.6);
+  color: #d4af37;
+  font-weight: 700;
+}
+
+.dynamic-carousel-description {
+  max-width: 700px;
+  font-size: 1.15rem;
+  line-height: 1.7;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+
+.dynamic-carousel-description h3 {
+  color: #d4af37;
+  font-size: 1.75rem;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.dynamic-carousel-description strong {
+  color: #f8f9fa;
+  font-weight: 700;
+}
+
+.dynamic-carousel-description em {
+  color: #e0e0e0;
+  font-style: italic;
+}
+
+.dynamic-carousel-description a {
+  color: #d4af37;
+  text-decoration: none;
+  border-bottom: 2px solid #d4af37;
+}
+
+.dynamic-carousel-description a:hover {
+  color: #f3d87c;
+  border-bottom-color: #f3d87c;
+}
+
+.dynamic-carousel-description ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 1rem 0;
+}
+
+.dynamic-carousel-description li {
+  position: relative;
+  padding-left: 2rem;
+  margin: 0.75rem 0;
+}
+
+.dynamic-carousel-description li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #d4af37;
+  font-weight: bold;
+  font-size: 1.25rem;
+}
+
+.dynamic-carousel-indicators {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.dynamic-carousel-indicators .indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dynamic-carousel-indicators .indicator:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: scale(1.2);
+}
+
+.dynamic-carousel-indicators .indicator.active {
+  background: #d4af37;
+  width: 30px;
+  border-radius: 6px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dynamic-carousel-overlay h2 {
+    font-size: 1.75rem;
+  }
+  
+  .dynamic-carousel-description {
+    font-size: 1rem;
+  }
+}

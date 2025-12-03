@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 import PlanningCarousel from '../components/PlanningCarousel';
+import DynamicCarousel from '../components/DynamicCarousel';
 
 
 function ActivitiesPage() {
@@ -148,6 +149,9 @@ function ActivitiesPage() {
 
   return (
     <div className="activities-page">
+      {/* Carrousel dynamique pour la page Activités */}
+      <DynamicCarousel page="activities" height={350} />
+
       <div className="activities-hero">
         <h1>
           <span style={{display:'inline-block', verticalAlign:'middle', marginRight:'10px'}}>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hors ligne - GJ Camp</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+      padding: 2rem;
+    }
+    .offline-container {
+      max-width: 500px;
+    }
+    .offline-icon {
+      font-size: 5rem;
+      margin-bottom: 2rem;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    p {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+    button {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    button:hover {
+      background: #f0f0f0;
+      transform: scale(1.05);
+    }
+    .status {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+    .online {
+      color: #4caf50;
+      font-weight: 600;
+    }
+    .offline {
+      color: #ff5252;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">📡❌</div>
+    <h1>Vous êtes hors ligne</h1>
+    <p>
+      Impossible de se connecter au serveur. Vérifiez votre connexion Internet et réessayez.
+    </p>
+    <button onclick="window.location.reload()">
+      🔄 Réessayer
+    </button>
+    <div class="status">
+      État : <span id="status" class="offline">Hors ligne</span>
+    </div>
+  </div>
+
+  <script>
+    // Vérifier l'état de la connexion
+    function updateStatus() {
+      const statusEl = document.getElementById('status');
+      if (navigator.onLine) {
+        statusEl.textContent = 'En ligne';
+        statusEl.className = 'online';
+        // Recharger automatiquement après 2 secondes si en ligne
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        statusEl.textContent = 'Hors ligne';
+        statusEl.className = 'offline';
+      }
+    }
+
+    // Écouter les changements de connexion
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+    
+    // Vérifier toutes les 3 secondes
+    setInterval(updateStatus, 3000);
+    
+    updateStatus();
+  </script>
+</body>
+</html>

@@ -6,10 +6,25 @@ import '../styles/ProgrammePage.css';
 
 function ProgrammePage() {
   const [activities, setActivities] = useState([]);
-  const { isAuthenticated, token, user } = useContext(AuthContext);
-  const selectedCreneaux = user?.selectedCreneaux || {};
+  const { isAuthenticated, token, user, refreshUser } = useContext(AuthContext);
+  const [selectedCreneaux, setSelectedCreneaux] = useState(user?.selectedCreneaux || {});
   const joursDisponibles = Array.from(new Set(activities.map(act => act.jour))).sort((a, b) => a - b);
   const [selectedDay, setSelectedDay] = useState(joursDisponibles[0] || 1);
+
+  // Mettre à jour selectedCreneaux quand user change
+  useEffect(() => {
+    if (user?.selectedCreneaux) {
+      setSelectedCreneaux(user.selectedCreneaux);
+      console.log('✅ Créneaux mis à jour depuis user:', user.selectedCreneaux);
+    }
+  }, [user]);
+
+  // Rafraîchir les données utilisateur au chargement
+  useEffect(() => {
+    if (refreshUser) {
+      refreshUser();
+    }
+  }, [refreshUser]);
 
   // Charger les activités depuis l'API
   async function fetchActivities() {
