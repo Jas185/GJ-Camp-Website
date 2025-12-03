@@ -52,6 +52,14 @@ const LoginPage = () => {
                 required
               />
             </div>
+            <div style={{ textAlign: 'right', marginBottom: '15px' }}>
+              <Link 
+                to="/forgot-password" 
+                style={{ fontSize: '14px', color: '#a01e1e', textDecoration: 'none' }}
+              >
+                Mot de passe oublié ?
+              </Link>
+            </div>
             <button type="submit" className="btn-primary" disabled={loading}>
               {loading ? 'Connexion en cours...' : 'Se connecter'}
             </button>

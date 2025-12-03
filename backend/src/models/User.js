@@ -70,6 +70,27 @@ const userSchema = new mongoose.Schema({
     type: Date,
     select: false,
   },
+  resetPasswordToken: {
+    type: String,
+    select: false,
+  },
+  resetPasswordExpires: {
+    type: Date,
+    select: false,
+  },
+  resetPasswordRequestedAt: {
+    type: Date,
+    default: null,
+  },
+  resetPasswordApprovedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+  },
+  resetPasswordApproved: {
+    type: Boolean,
+    default: false,
+  },
   profilePhoto: {
     type: String,
     default: null,
@@ -176,6 +197,23 @@ userSchema.methods.generateEmailVerificationToken = function() {
   this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
   
   return verificationToken;
+};
+
+// Générer un token de réinitialisation de mot de passe
+userSchema.methods.generatePasswordResetToken = function() {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  
+  // Token expire dans 24 heures
+  this.resetPasswordExpires = Date.now() + 24 * 60 * 60 * 1000;
+  this.resetPasswordRequestedAt = Date.now();
+  this.resetPasswordApproved = false;
+  
+  return resetToken;
 };
 
 // Supprimer le mot de passe lors de la sérialisation

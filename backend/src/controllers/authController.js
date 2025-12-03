@@ -2,7 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const crypto = require('crypto');
-const { sendVerificationEmail } = require('../config/email');
+const { sendVerificationEmail, sendPasswordResetRequestEmail, sendPasswordResetEmail } = require('../config/email');
 
 // Générer JWT
 const generateToken = (user) => {
@@ -513,5 +513,95 @@ exports.updatePushPlayerId = async (req, res) => {
   } catch (error) {
     console.error('Erreur enregistrement push ID:', error);
     res.status(500).json({ message: 'Erreur lors de l\'activation' });
+  }
+};
+
+// @route   POST /api/auth/forgot-password
+// @desc    Demande de réinitialisation de mot de passe (en attente d'approbation admin)
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email requis' });
+    }
+
+    // Vérifier si l'utilisateur existe
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Par sécurité, on renvoie le même message même si l'utilisateur n'existe pas
+      return res.status(200).json({ 
+        message: 'Si un compte existe avec cet email, vous recevrez un email de confirmation.' 
+      });
+    }
+
+    // Générer le token de réinitialisation
+    const resetToken = user.generatePasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Envoyer l'email de demande (pas encore le lien de réinitialisation)
+    await sendPasswordResetRequestEmail(user.email, user.firstName);
+
+    console.log(`🔐 Demande de réinitialisation créée pour ${user.email}, en attente d'approbation admin`);
+    
+    res.status(200).json({
+      message: 'Demande de réinitialisation envoyée. Un administrateur doit approuver votre demande avant que vous ne receviez le lien de réinitialisation.'
+    });
+  } catch (error) {
+    console.error('Erreur lors de la demande de réinitialisation:', error);
+    res.status(500).json({ message: 'Erreur lors de l\'envoi de la demande' });
+  }
+};
+
+// @route   POST /api/auth/reset-password/:token
+// @desc    Réinitialiser le mot de passe avec le token
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ 
+        message: 'Le mot de passe doit contenir au moins 6 caractères' 
+      });
+    }
+
+    // Hasher le token pour la comparaison
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    // Trouver l'utilisateur avec le token valide et non expiré
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+      resetPasswordApproved: true, // Doit être approuvé par un admin
+    }).select('+resetPasswordToken');
+
+    if (!user) {
+      return res.status(400).json({ 
+        message: 'Token invalide, expiré ou non approuvé par un administrateur' 
+      });
+    }
+
+    // Mettre à jour le mot de passe
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    user.resetPasswordApproved = false;
+    user.resetPasswordRequestedAt = undefined;
+    user.resetPasswordApprovedBy = undefined;
+    
+    await user.save();
+
+    console.log(`✅ Mot de passe réinitialisé pour ${user.email}`);
+    
+    res.status(200).json({
+      message: 'Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.'
+    });
+  } catch (error) {
+    console.error('Erreur lors de la réinitialisation:', error);
+    res.status(500).json({ message: 'Erreur lors de la réinitialisation du mot de passe' });
   }
 };

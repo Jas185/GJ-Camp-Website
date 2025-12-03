@@ -139,7 +139,170 @@ const resendVerificationEmail = async (email, firstName, verificationToken) => {
   return sendVerificationEmail(email, firstName, verificationToken);
 };
 
+// Envoyer un email de demande de réinitialisation de mot de passe
+const sendPasswordResetRequestEmail = async (email, firstName) => {
+  let transporter = createTransporter();
+  
+  if (!transporter) {
+    const testAccount = await nodemailer.createTestAccount();
+    transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+    console.log('📧 Compte email de test créé:', testAccount.user);
+  }
+
+  const mailOptions = {
+    from: `"GJ Camp" <${process.env.EMAIL_USER || 'noreply@gjcamp.com'}>`,
+    to: email,
+    subject: '🔐 Demande de réinitialisation de mot de passe - GJ Camp',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #a01e1e; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+            .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px; }
+            .alert { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 Demande de réinitialisation</h1>
+            </div>
+            <div class="content">
+              <h2>Bonjour ${firstName},</h2>
+              <p>Nous avons bien reçu votre demande de réinitialisation de mot de passe.</p>
+              
+              <div class="alert">
+                <strong>⏳ En attente de validation</strong><br>
+                Pour des raisons de sécurité, votre demande doit être approuvée par un administrateur.<br>
+                Vous recevrez un email avec un lien de réinitialisation une fois votre demande validée.
+              </div>
+              
+              <p>Ce processus prend généralement quelques heures.</p>
+              
+              <p>Si vous n'avez pas fait cette demande, veuillez contacter immédiatement un administrateur.</p>
+              
+              <p>Cordialement,<br>L'équipe GJ Camp</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} GJ Camp - Tous droits réservés</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  };
+
+  const info = await transporter.sendMail(mailOptions);
+  
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('📨 Email de demande de réinitialisation envoyé');
+    console.log('🔗 Prévisualisation:', nodemailer.getTestMessageUrl(info));
+  }
+  
+  return info;
+};
+
+// Envoyer un email avec le lien de réinitialisation (après approbation admin)
+const sendPasswordResetEmail = async (email, firstName, resetToken) => {
+  let transporter = createTransporter();
+  
+  if (!transporter) {
+    const testAccount = await nodemailer.createTestAccount();
+    transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+    console.log('📧 Compte email de test créé:', testAccount.user);
+  }
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+  const mailOptions = {
+    from: `"GJ Camp" <${process.env.EMAIL_USER || 'noreply@gjcamp.com'}>`,
+    to: email,
+    subject: '✅ Réinitialisation de mot de passe approuvée - GJ Camp',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #a01e1e; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+            .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px; }
+            .button { display: inline-block; background-color: #001a4d; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .warning { background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✅ Réinitialisation approuvée</h1>
+            </div>
+            <div class="content">
+              <h2>Bonjour ${firstName},</h2>
+              <p>Votre demande de réinitialisation de mot de passe a été approuvée par un administrateur.</p>
+              
+              <p>Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :</p>
+              
+              <div style="text-align: center;">
+                <a href="${resetUrl}" class="button">🔐 Réinitialiser mon mot de passe</a>
+              </div>
+              
+              <p>Ou copiez ce lien dans votre navigateur :</p>
+              <p style="background-color: #e9e9e9; padding: 10px; border-radius: 3px; word-break: break-all;">
+                ${resetUrl}
+              </p>
+              
+              <div class="warning">
+                <strong>⚠️ Important :</strong><br>
+                • Ce lien expire dans 24 heures<br>
+                • N'utilisez ce lien que si vous avez demandé une réinitialisation<br>
+                • Contactez immédiatement un administrateur si vous n'avez pas fait cette demande
+              </div>
+              
+              <p>Cordialement,<br>L'équipe GJ Camp</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} GJ Camp - Tous droits réservés</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  };
+
+  const info = await transporter.sendMail(mailOptions);
+  
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('📨 Email de réinitialisation envoyé');
+    console.log('🔗 Prévisualisation:', nodemailer.getTestMessageUrl(info));
+  }
+  
+  return info;
+};
+
 module.exports = {
   sendVerificationEmail,
   resendVerificationEmail,
+  sendPasswordResetRequestEmail,
+  sendPasswordResetEmail,
 };

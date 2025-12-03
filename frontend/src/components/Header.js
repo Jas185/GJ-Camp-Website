@@ -135,6 +135,9 @@ const Header = () => {
                 {canAccessPayouts && (
                   <li><Link to="/gestion/redistributions">Redistributions</Link></li>
                 )}
+                {canAccessUserAdmin && (
+                  <li><Link to="/gestion/reinitialisations">Mots de passe</Link></li>
+                )}
               </ul>
             </li>
           )}

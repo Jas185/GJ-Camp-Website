@@ -31,6 +31,9 @@ import AccessDeniedPage from './pages/AccessDeniedPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import DataManagementPage from './pages/DataManagementPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import PasswordResetManagementPage from './pages/PasswordResetManagementPage';
 import GuardedRoute from './components/GuardedRoute';
 import CookieConsent from './components/CookieConsent';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
@@ -50,6 +53,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
             <Route path="/resend-verification" element={<ResendVerificationPage />} />
             <Route path="/inscription-camp" element={<CampRegistrationPage />} />
@@ -135,6 +140,15 @@ function App() {
                 <GuardedRoute
                   element={<SettingsPage />}
                   roles={['admin']}
+                />
+              }
+            />
+            <Route
+              path="/gestion/reinitialisations"
+              element={
+                <GuardedRoute
+                  element={<PasswordResetManagementPage />}
+                  roles={['responsable', 'admin']}
                 />
               }
             />

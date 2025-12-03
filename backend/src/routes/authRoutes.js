@@ -26,6 +26,10 @@ router.post('/check-email', authController.checkEmail);
 router.get('/verify-email/:token', authController.verifyEmail);
 router.post('/resend-verification', authController.resendVerification);
 
+// Routes de réinitialisation de mot de passe
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password/:token', authController.resetPassword);
+
 // Routes protégées
 router.get('/me', auth, authController.getMe);
 router.put('/profile', auth, authController.updateProfile);
