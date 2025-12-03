@@ -1,0 +1,23 @@
+# Dockerfile pour le backend Node.js
+FROM node:18-alpine
+
+# Créer le répertoire de l'application
+WORKDIR /app
+
+# Copier les fichiers package.json et package-lock.json
+COPY backend/package*.json ./
+
+# Installer les dépendances
+RUN npm ci --only=production
+
+# Copier le reste des fichiers du backend
+COPY backend/ .
+
+# Exposer le port 5000
+EXPOSE 5000
+
+# Variable d'environnement par défaut
+ENV NODE_ENV=production
+
+# Commande pour démarrer l'application
+CMD ["node", "src/server.js"]

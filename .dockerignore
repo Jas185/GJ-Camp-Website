@@ -1,0 +1,67 @@
+# Dépendances
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build
+build
+dist
+.next
+
+# Environnement
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+coverage
+.nyc_output
+test-results
+
+# Documentation
+README.md
+SETUP.md
+STRUCTURE.md
+RGPD.md
+*.md
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Uploads (seront montés en volume)
+uploads/*
+
+# Cache
+.cache
+.parcel-cache
+
+# Temporaire
+tmp
+temp
+*.tmp

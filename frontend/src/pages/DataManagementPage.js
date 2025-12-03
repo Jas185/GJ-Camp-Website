@@ -1,289 +1,281 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../styles/LegalPages.css';
+import { AuthContext } from '../context/AuthContext';
+import '../styles/App.css';
 
 const DataManagementPage = () => {
-  const { user, token } = useContext(AuthContext);
+  const { user, token, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-
-  // Télécharger mes données
-  const handleDownloadData = async () => {
-    setLoading(true);
-    setMessage('');
-    setError('');
-
-    try {
-      const response = await axios.get('/api/auth/my-data', {
-        headers: { Authorization: `Bearer ${token}` },
-        responseType: 'blob'
-      });
-
-      // Créer un lien de téléchargement
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `mes-donnees-gj-${Date.now()}.json`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      setMessage('✅ Vos données ont été téléchargées avec succès !');
-    } catch (err) {
-      setError('❌ Erreur lors du téléchargement de vos données. Veuillez réessayer.');
-      console.error('Erreur téléchargement données:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Demander la suppression de mon compte
-  const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      '⚠️ ATTENTION : Cette action est irréversible !\n\n' +
-      'En supprimant votre compte, vous perdrez :\n' +
-      '- Toutes vos inscriptions au camp\n' +
-      '- Les inscriptions de vos invités\n' +
-      '- Votre historique de paiements\n' +
-      '- Tous vos accès au site\n\n' +
-      'Les paiements déjà effectués ne seront PAS remboursés automatiquement.\n\n' +
-      'Êtes-vous absolument sûr(e) de vouloir continuer ?'
-    );
-
-    if (!confirmed) return;
-
-    const doubleConfirm = window.confirm(
-      '⚠️ DERNIÈRE CONFIRMATION :\n\n' +
-      'Tapez OK pour confirmer définitivement la suppression de votre compte.'
-    );
-
-    if (!doubleConfirm) return;
-
-    setLoading(true);
-    setMessage('');
-    setError('');
-
-    try {
-      await axios.delete('/api/auth/delete-account', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      setMessage('✅ Votre demande de suppression a été enregistrée. Vous recevrez un email de confirmation.');
-      
-      // Déconnexion automatique après 3 secondes
-      setTimeout(() => {
-        localStorage.removeItem('token');
-        window.location.href = '/';
-      }, 3000);
-    } catch (err) {
-      setError('❌ Erreur lors de la suppression du compte. Contactez-nous à dpo@gj-camp.fr');
-      console.error('Erreur suppression compte:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Demander une correction de données
-  const handleRequestCorrection = () => {
-    window.location.href = `mailto:dpo@gj-camp.fr?subject=Demande de rectification de données&body=Bonjour,%0D%0A%0D%0AJe souhaite rectifier les informations suivantes dans mon compte :%0D%0A%0D%0ANom : ${user?.firstName} ${user?.lastName}%0D%0AEmail : ${user?.email}%0D%0A%0D%0ADonnées à corriger :%0D%0A[Décrivez les modifications souhaitées]%0D%0A%0D%0ACordialement`;
-  };
-
-  // Demander l'opposition au traitement
-  const handleObjectToProcessing = () => {
-    window.location.href = `mailto:dpo@gj-camp.fr?subject=Opposition au traitement de mes données&body=Bonjour,%0D%0A%0D%0AJe m'oppose au traitement de mes données personnelles pour :%0D%0A%0D%0A☐ Recevoir la newsletter%0D%0A☐ Communications marketing%0D%0A☐ Autre (précisez) :%0D%0A%0D%0ANom : ${user?.firstName} ${user?.lastName}%0D%0AEmail : ${user?.email}%0D%0A%0D%0ACordialement`;
-  };
-
-  // Demander la limitation du traitement
-  const handleLimitProcessing = () => {
-    window.location.href = `mailto:dpo@gj-camp.fr?subject=Demande de limitation du traitement&body=Bonjour,%0D%0A%0D%0AJe souhaite limiter le traitement de mes données personnelles.%0D%0A%0D%0ANom : ${user?.firstName} ${user?.lastName}%0D%0AEmail : ${user?.email}%0D%0ARaison de la demande : [Expliquez votre demande]%0D%0A%0D%0ACordialement`;
-  };
+  const [marketingConsent, setMarketingConsent] = useState(user?.marketingConsent || false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (!user) {
     return (
-      <div className="legal-page">
-        <div className="legal-container">
-          <h1>Gestion de Mes Données</h1>
-          <div className="important-box">
-            <p>⚠️ Vous devez être connecté pour accéder à cette page.</p>
-          </div>
-          <a href="/connexion" className="action-btn">Se connecter</a>
+      <div className="container" style={{ paddingTop: '80px' }}>
+        <div className="form-container">
+          <h2>Accès refusé</h2>
+          <p>Vous devez être connecté pour accéder à cette page.</p>
+          <button onClick={() => navigate('/login')} className="btn-primary">
+            Se connecter
+          </button>
         </div>
       </div>
     );
   }
 
+  const handleExportData = async () => {
+    setLoading(true);
+    setMessage('');
+    setError('');
+
+    try {
+      const response = await axios.get('/api/user/data/export', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Télécharger le fichier JSON
+      const dataStr = JSON.stringify(response.data.data, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = window.URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `mes-donnees-gj-camp-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      setMessage('✅ Vos données ont été exportées avec succès !');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de l\'export des données');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateConsents = async () => {
+    setLoading(true);
+    setMessage('');
+    setError('');
+
+    try {
+      await axios.put('/api/user/consents/update', 
+        { marketingConsent },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setMessage('✅ Vos préférences de consentement ont été mises à jour !');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de la mise à jour');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setLoading(true);
+    setMessage('');
+    setError('');
+
+    try {
+      await axios.delete('/api/user/account/delete', {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { confirmDelete: true }
+      });
+
+      setMessage('✅ Votre compte a été supprimé. Vous allez être déconnecté...');
+      
+      setTimeout(() => {
+        logout();
+        navigate('/');
+      }, 2000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de la suppression du compte');
+    } finally {
+      setLoading(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   return (
-    <div className="legal-page">
-      <div className="legal-container">
-        <h1>Gestion de Mes Données Personnelles</h1>
-        <p className="last-updated">
-          Bonjour <strong>{user.firstName} {user.lastName}</strong>, 
-          gérez vos données RGPD depuis cette page.
-        </p>
+    <div className="container" style={{ paddingTop: '80px', paddingBottom: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div className="form-container" style={{ maxWidth: '800px', width: '100%' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '30px', color: 'var(--color-red)' }}>
+          Gestion de mes données personnelles
+        </h1>
 
-        {message && (
-          <div className="note" style={{ background: '#d4edda', borderColor: '#28a745', color: '#155724' }}>
-            {message}
-          </div>
-        )}
+        {message && <div className="form-success" style={{ marginBottom: '20px' }}>{message}</div>}
+        {error && <div className="form-error" style={{ marginBottom: '20px' }}>{error}</div>}
 
-        {error && (
-          <div className="note" style={{ background: '#f8d7da', borderColor: '#dc3545', color: '#721c24' }}>
-            {error}
-          </div>
-        )}
-
-        <section className="legal-section">
-          <h2>Vos Droits RGPD</h2>
-          <p>
-            Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez 
-            de plusieurs droits concernant vos données personnelles. Utilisez les actions ci-dessous 
-            pour exercer vos droits.
+        {/* Section Export des données */}
+        <div style={{ marginBottom: '40px', padding: '25px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+          <h2 style={{ color: 'var(--color-red)', fontSize: '20px', marginBottom: '15px' }}>
+            📥 Télécharger mes données
+          </h2>
+          <p style={{ marginBottom: '15px', lineHeight: '1.6' }}>
+            Conformément au RGPD, vous avez le droit d'obtenir une copie de toutes vos données personnelles 
+            dans un format structuré et lisible par machine (JSON).
           </p>
-        </section>
-
-        {/* Droit d'accès */}
-        <div className="action-card">
-          <h3>🔍 Droit d'Accès - Télécharger Mes Données</h3>
-          <p>
-            Obtenez une copie complète de toutes les données personnelles que nous détenons sur vous 
-            au format JSON (lisible et portable).
+          <p style={{ marginBottom: '15px', fontSize: '14px', color: '#666' }}>
+            Cet export inclut : profil, inscriptions, historique des consentements, activités sélectionnées.
           </p>
-          <p><strong>Inclus :</strong> Informations de profil, inscriptions au camp, historique de paiements, données invités.</p>
           <button 
-            onClick={handleDownloadData} 
-            className="action-btn"
+            onClick={handleExportData} 
+            className="btn-primary"
             disabled={loading}
           >
-            {loading ? '⏳ Téléchargement...' : '📥 Télécharger Mes Données'}
+            {loading ? 'Export en cours...' : 'Télécharger mes données'}
           </button>
         </div>
 
-        {/* Droit de rectification */}
-        <div className="action-card">
-          <h3>✏️ Droit de Rectification - Modifier Mes Informations</h3>
-          <p>
-            Vous avez détecté une erreur dans vos informations ? Demandez la correction de vos données 
-            (nom, email, téléphone, adresse, etc.).
-          </p>
-          <p><strong>Délai de réponse :</strong> 1 mois maximum.</p>
-          <button 
-            onClick={handleRequestCorrection} 
-            className="action-btn"
-            disabled={loading}
-          >
-            ✉️ Demander une Rectification
-          </button>
-        </div>
-
-        {/* Droit à l'effacement */}
-        <div className="action-card">
-          <h3>🗑️ Droit à l'Effacement - Supprimer Mon Compte</h3>
-          <div className="disclaimer-box">
-            <h4>⚠️ ATTENTION - Action Irréversible</h4>
-            <p>
-              La suppression de votre compte entraînera la perte définitive de :
-            </p>
-            <ul>
-              <li>❌ Toutes vos inscriptions au camp</li>
-              <li>❌ Les inscriptions de vos invités</li>
-              <li>❌ Votre historique de paiements</li>
-              <li>❌ Vos accès au site</li>
-            </ul>
-            <p>
-              <strong>Les paiements déjà effectués ne seront PAS remboursés automatiquement.</strong> 
-              Si vous souhaitez un remboursement, contactez-nous AVANT de supprimer votre compte.
-            </p>
-          </div>
-          <button 
-            onClick={handleDeleteAccount} 
-            className="action-btn danger"
-            disabled={loading}
-          >
-            {loading ? '⏳ Suppression...' : '🗑️ Supprimer Mon Compte Définitivement'}
-          </button>
-        </div>
-
-        {/* Droit d'opposition */}
-        <div className="action-card">
-          <h3>⛔ Droit d'Opposition - Refuser Certains Traitements</h3>
-          <p>
-            Vous pouvez vous opposer au traitement de vos données à des fins de marketing, 
-            prospection commerciale ou statistiques.
-          </p>
-          <p><strong>Exemples :</strong> Ne plus recevoir la newsletter, refuser les communications marketing.</p>
-          <button 
-            onClick={handleObjectToProcessing} 
-            className="action-btn"
-            disabled={loading}
-          >
-            🚫 M'opposer au Traitement
-          </button>
-        </div>
-
-        {/* Droit à la limitation */}
-        <div className="action-card">
-          <h3>⏸️ Droit à la Limitation - Geler le Traitement</h3>
-          <p>
-            Demandez la suspension temporaire du traitement de vos données dans certaines situations 
-            (contestation de l'exactitude, traitement illicite, etc.).
-          </p>
-          <p><strong>Effet :</strong> Vos données seront conservées mais plus utilisées temporairement.</p>
-          <button 
-            onClick={handleLimitProcessing} 
-            className="action-btn"
-            disabled={loading}
-          >
-            ⏸️ Limiter le Traitement
-          </button>
-        </div>
-
-        <section className="legal-section">
-          <h2>📋 Informations Complémentaires</h2>
+        {/* Section Consentements */}
+        <div style={{ marginBottom: '40px', padding: '25px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+          <h2 style={{ color: 'var(--color-red)', fontSize: '20px', marginBottom: '15px' }}>
+            ⚙️ Gérer mes consentements
+          </h2>
           
-          <h3>Délais de Réponse</h3>
-          <p>
-            Nous nous engageons à traiter toute demande dans un délai maximum d'<strong>1 mois</strong> 
-            à compter de la réception de votre demande. Ce délai peut être prolongé de 2 mois si nécessaire, 
-            auquel cas nous vous en informerons.
-          </p>
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ padding: '15px', backgroundColor: '#e8f5e9', borderRadius: '8px', marginBottom: '15px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', fontSize: '15px' }}>
+                <input
+                  type="checkbox"
+                  checked={true}
+                  disabled
+                  style={{ marginRight: '10px', cursor: 'not-allowed' }}
+                />
+                <span>
+                  <strong>Traitement des données personnelles</strong> (obligatoire)<br/>
+                  <small style={{ color: '#666' }}>
+                    Nécessaire pour utiliser les services GJ Camp. Ne peut pas être désactivé.
+                  </small>
+                </span>
+              </label>
+            </div>
 
-          <h3>Vérification d'Identité</h3>
-          <p>
-            Pour garantir la sécurité de vos données, nous pouvons vous demander de prouver votre identité 
-            avant de traiter certaines demandes (copie de pièce d'identité pour suppression de compte par exemple).
-          </p>
-
-          <h3>Réclamation CNIL</h3>
-          <p>
-            Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation 
-            auprès de la Commission Nationale de l'Informatique et des Libertés (CNIL) :
-          </p>
-          <div className="contact-box">
-            <p><strong>Site web :</strong> <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" style={{color: '#ffd700'}}>www.cnil.fr</a></p>
-            <p><strong>Adresse :</strong> CNIL - 3 Place de Fontenoy - TSA 80715 - 75334 PARIS CEDEX 07</p>
-            <p><strong>Téléphone :</strong> 01 53 73 22 22</p>
+            <div style={{ padding: '15px', backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '8px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '15px' }}>
+                <input
+                  type="checkbox"
+                  checked={marketingConsent}
+                  onChange={(e) => setMarketingConsent(e.target.checked)}
+                  style={{ marginRight: '10px', cursor: 'pointer' }}
+                />
+                <span>
+                  <strong>Communications marketing</strong> (optionnel)<br/>
+                  <small style={{ color: '#666' }}>
+                    Recevoir des newsletters et informations sur les événements GJ Camp.
+                  </small>
+                </span>
+              </label>
+            </div>
           </div>
 
-          <h3>Contact Délégué à la Protection des Données (DPO)</h3>
-          <div className="info-box">
-            <p>Pour toute question concernant vos données personnelles :</p>
-            <p><strong>📧 Email DPO :</strong> dpo@gj-camp.fr</p>
-            <p><strong>📧 Email Contact :</strong> contact@gj-camp.fr</p>
-            <p><strong>⏰ Délai de réponse :</strong> 48h ouvrées</p>
-          </div>
-        </section>
+          <button 
+            onClick={handleUpdateConsents} 
+            className="btn-primary"
+            disabled={loading}
+          >
+            {loading ? 'Mise à jour...' : 'Enregistrer mes préférences'}
+          </button>
 
-        <section className="legal-section">
-          <h2>📖 Documents Légaux</h2>
-          <p>Consultez nos autres documents légaux :</p>
-          <ul>
-            <li><a href="/politique-confidentialite">📄 Politique de Confidentialité</a></li>
-            <li><a href="/conditions-utilisation">📜 Conditions Générales d'Utilisation</a></li>
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '15px' }}>
+            Dernière acceptation de la politique : {user.privacyPolicyAcceptedAt 
+              ? new Date(user.privacyPolicyAcceptedAt).toLocaleDateString('fr-FR')
+              : 'Non disponible'}
+          </p>
+        </div>
+
+        {/* Section Suppression du compte */}
+        <div style={{ marginBottom: '40px', padding: '25px', backgroundColor: '#fff3cd', borderRadius: '8px', border: '2px solid #ffc107' }}>
+          <h2 style={{ color: '#856404', fontSize: '20px', marginBottom: '15px' }}>
+            🗑️ Supprimer mon compte
+          </h2>
+          <p style={{ marginBottom: '15px', lineHeight: '1.6', color: '#856404' }}>
+            <strong>Attention :</strong> Cette action est irréversible. Toutes vos données personnelles seront 
+            anonymisées et vous ne pourrez plus accéder à votre compte.
+          </p>
+          <p style={{ marginBottom: '15px', fontSize: '14px', color: '#856404' }}>
+            Les données liées aux inscriptions et paiements seront conservées de manière anonyme pour 
+            nos obligations comptables légales (3 ans).
+          </p>
+
+          {!showDeleteConfirm ? (
+            <button 
+              onClick={() => setShowDeleteConfirm(true)} 
+              style={{
+                backgroundColor: '#dc3545',
+                color: 'white',
+                padding: '12px 24px',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '16px',
+              }}
+            >
+              Demander la suppression de mon compte
+            </button>
+          ) : (
+            <div style={{ padding: '15px', backgroundColor: '#f8d7da', borderRadius: '8px', border: '1px solid #f5c6cb' }}>
+              <p style={{ marginBottom: '15px', color: '#721c24', fontWeight: 'bold' }}>
+                ⚠️ Êtes-vous sûr de vouloir supprimer définitivement votre compte ?
+              </p>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  onClick={handleDeleteAccount}
+                  disabled={loading}
+                  style={{
+                    backgroundColor: '#dc3545',
+                    color: 'white',
+                    padding: '10px 20px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {loading ? 'Suppression...' : 'Oui, supprimer définitivement'}
+                </button>
+                <button 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  style={{
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    padding: '10px 20px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Informations légales */}
+        <div style={{ padding: '20px', backgroundColor: '#e9ecef', borderRadius: '8px', fontSize: '14px' }}>
+          <h3 style={{ fontSize: '16px', marginBottom: '10px' }}>ℹ️ Vos droits RGPD</h3>
+          <ul style={{ marginLeft: '20px', lineHeight: '1.8' }}>
+            <li><strong>Droit d'accès :</strong> Télécharger une copie de vos données</li>
+            <li><strong>Droit de rectification :</strong> Modifier vos informations depuis votre profil</li>
+            <li><strong>Droit à l'effacement :</strong> Supprimer votre compte</li>
+            <li><strong>Droit de portabilité :</strong> Recevoir vos données au format JSON</li>
+            <li><strong>Droit d'opposition :</strong> Refuser le marketing (décochez ci-dessus)</li>
           </ul>
-        </section>
+          <p style={{ marginTop: '15px' }}>
+            Pour toute question : <a href="mailto:dpo@gj-camp.fr" style={{ color: 'var(--color-red)' }}>dpo@gj-camp.fr</a>
+          </p>
+        </div>
+
+        <div style={{ marginTop: '30px', textAlign: 'center' }}>
+          <button onClick={() => navigate('/')} className="btn-secondary">
+            Retour à l'accueil
+          </button>
+        </div>
       </div>
     </div>
   );
